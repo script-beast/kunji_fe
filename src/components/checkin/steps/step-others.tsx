@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { IconPlus } from "@/components/ui/icons";
 import { GuestCard } from "@/components/checkin/guest-card";
-import { BOOKING } from "@/lib/constants";
 import type { CoGuest } from "@/lib/types";
 
 interface StepOthersProps {
@@ -14,8 +13,7 @@ interface StepOthersProps {
   onAddGuest: () => void;
   onUpdateGuest: (id: string, patch: Partial<CoGuest>) => void;
   onRemoveGuest: (id: string) => void;
-  onCaptureGuest: (id: string) => void;
-  onRetryGuest: (id: string) => void;
+  onSelectGuestFile: (id: string, file: File) => void;
   onReplaceGuest: (id: string) => void;
 }
 
@@ -29,8 +27,7 @@ export function StepOthers({
   onAddGuest,
   onUpdateGuest,
   onRemoveGuest,
-  onCaptureGuest,
-  onRetryGuest,
+  onSelectGuestFile,
   onReplaceGuest,
 }: StepOthersProps) {
   const countHeadline =
@@ -61,7 +58,7 @@ export function StepOthers({
               {countHeadline}
             </div>
             <div className="text-xs text-neutral-700 sm:mt-1">
-              {BOOKING.guestCount} guests booked
+              {maxGuests} guests booked
             </div>
           </div>
           <div className="mt-2 text-[12.5px] text-neutral-800 sm:mt-2.5 sm:text-[13px]">
@@ -86,8 +83,7 @@ export function StepOthers({
             index={index}
             onUpdate={(patch) => onUpdateGuest(guest.id, patch)}
             onRemove={() => onRemoveGuest(guest.id)}
-            onCapture={() => onCaptureGuest(guest.id)}
-            onRetry={() => onRetryGuest(guest.id)}
+            onSelectFile={(file) => onSelectGuestFile(guest.id, file)}
             onReplace={() => onReplaceGuest(guest.id)}
           />
         ))}

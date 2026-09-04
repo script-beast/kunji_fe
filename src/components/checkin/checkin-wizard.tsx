@@ -16,10 +16,11 @@ import { StepOthers } from "@/components/checkin/steps/step-others";
 import { StepReview } from "@/components/checkin/steps/step-review";
 import { SubmittedScreen } from "@/components/checkin/screens/submitted-screen";
 import { useCheckinWizard, type CheckinWizard as WizardState } from "@/hooks/use-checkin-wizard";
-import { BOOKING, HOST, PROPERTY, STEP_NAMES } from "@/lib/constants";
+import { HOST, PROPERTY, STEP_NAMES } from "@/lib/constants";
+import type { GuestBooking } from "@/lib/api";
+import { formatDateRange } from "@/lib/utils";
 import type { WizardStep } from "@/lib/types";
 
-const MAX_GUESTS = BOOKING.guestCount;
 const TOTAL_STEPS = STEP_NAMES.length;
 
 function StepContent({ wizard }: { wizard: WizardState }) {
@@ -42,8 +43,7 @@ function StepContent({ wizard }: { wizard: WizardState }) {
           isForeign={wizard.isForeign}
           isAadhaar={wizard.isAadhaar}
           effectiveDocType={wizard.effectiveDocType}
-          onCapture={wizard.uploadPrimary}
-          onRetry={wizard.uploadPrimary}
+          onSelectFile={wizard.selectPrimaryFile}
           onReplace={wizard.resetPrimaryUpload}
         />
       );
@@ -51,7 +51,7 @@ function StepContent({ wizard }: { wizard: WizardState }) {
       return (
         <StepOthers
           guests={wizard.coGuests}
-          maxGuests={MAX_GUESTS}
+          maxGuests={wizard.maxGuests}
           enteredCount={wizard.enteredGuestCount}
           shortBy={wizard.shortBy}
           guestUploadsMissing={wizard.guestUploadsMissing}
@@ -59,8 +59,7 @@ function StepContent({ wizard }: { wizard: WizardState }) {
           onAddGuest={wizard.addGuest}
           onUpdateGuest={wizard.updateGuest}
           onRemoveGuest={wizard.removeGuest}
-          onCaptureGuest={wizard.uploadGuest}
-          onRetryGuest={wizard.uploadGuest}
+          onSelectGuestFile={wizard.selectGuestFile}
           onReplaceGuest={wizard.resetGuestUpload}
         />
       );
@@ -85,8 +84,13 @@ function StepContent({ wizard }: { wizard: WizardState }) {
 
 function FooterButtons({ wizard }: { wizard: WizardState }) {
   const hostFirstName = HOST.name.split(" ")[0];
-  const primaryLabel = wizard.step === 5 ? `Submit to ${hostFirstName}` : "Continue";
-  const onPrimary = wizard.step === 5 ? wizard.submit : wizard.advance;
+  const primaryLabel =
+    wizard.step === 5
+      ? wizard.submitting
+        ? "Sending…"
+        : `Submit to ${hostFirstName}`
+      : "Continue";
+  const onPrimary = wizard.step === 5 ? () => void wizard.submit() : wizard.advance;
 
   return (
     <>
@@ -128,11 +132,18 @@ function buildRailSteps(wizard: WizardState): RailStep[] {
   });
 }
 
-export function CheckinWizard() {
-  const wizard = useCheckinWizard(MAX_GUESTS);
+interface CheckinWizardProps {
+  formToken: string;
+  booking?: GuestBooking;
+  objectionReason?: string;
+}
+
+export function CheckinWizard({ formToken, booking, objectionReason }: CheckinWizardProps) {
+  const wizard = useCheckinWizard({ formToken, booking });
   const natPicker: ReactNode = wizard.natPickerOpen ? (
     <NationalityPicker onPick={wizard.setNationality} onClose={wizard.closeNationalityPicker} />
   ) : null;
+  const dateRange = formatDateRange(booking?.checkInDate, booking?.checkOutDate);
 
   if (wizard.submitted) {
     const doneRail = STEP_NAMES.map((name) => ({
@@ -146,16 +157,16 @@ export function CheckinWizard() {
       <>
         <div className="sm:hidden">
           <MobileShell>
-            <SubmittedScreen />
+            <SubmittedScreen reference={booking?.bookingMyId} />
           </MobileShell>
         </div>
         <div className="hidden sm:block">
           <DesktopShell
-            stepCounter="Reference KJ-8F2A-4D"
+            stepCounter={booking?.bookingMyId ? `Reference ${booking.bookingMyId}` : "Submitted"}
             rail={<StepRail steps={doneRail} />}
-            aside={<BookingAside />}
+            aside={<BookingAside dates={dateRange} guests={wizard.maxGuests} />}
           >
-            <SubmittedScreen />
+            <SubmittedScreen reference={booking?.bookingMyId} />
           </DesktopShell>
         </div>
       </>
@@ -163,6 +174,19 @@ export function CheckinWizard() {
   }
 
   const stepIndex = wizard.step - 1;
+  const objectionBanner = objectionReason ? (
+    <div className="mx-4 mb-4 border-l-2 border-accent bg-panel px-3.5 py-3 sm:mx-0">
+      <div className="mb-1 text-[11px] tracking-widest uppercase text-ink/65">
+        {HOST.name} asked for a change
+      </div>
+      <p className="m-0 text-[13.5px] sm:text-sm">{objectionReason}</p>
+    </div>
+  ) : null;
+  const errorBanner = wizard.submitError ? (
+    <div className="mx-4 mb-4 border-2 border-accent p-3 text-sm sm:mx-0">
+      {wizard.submitError}
+    </div>
+  ) : null;
 
   return (
     <>
@@ -175,7 +199,8 @@ export function CheckinWizard() {
                   KUNJI
                 </div>
                 <div className="text-right text-[11px] text-neutral-700">
-                  {PROPERTY.name} · 4–7 Sep
+                  {PROPERTY.name}
+                  {dateRange ? ` · ${dateRange}` : ""}
                 </div>
               </div>
               <KeyProgress completed={stepIndex} current={stepIndex} total={TOTAL_STEPS} />
@@ -187,6 +212,8 @@ export function CheckinWizard() {
           }
           footer={<FooterButtons wizard={wizard} />}
         >
+          {objectionBanner}
+          {errorBanner}
           <StepContent wizard={wizard} />
           {natPicker}
         </MobileShell>
@@ -196,9 +223,11 @@ export function CheckinWizard() {
         <DesktopShell
           stepCounter={`Step ${wizard.step} of ${TOTAL_STEPS} · ${STEP_NAMES[stepIndex]}`}
           rail={<StepRail steps={buildRailSteps(wizard)} />}
-          aside={<BookingAside />}
+          aside={<BookingAside dates={dateRange} guests={wizard.maxGuests} />}
           footer={<FooterButtons wizard={wizard} />}
         >
+          {objectionBanner}
+          {errorBanner}
           <StepContent wizard={wizard} />
         </DesktopShell>
         {wizard.natPickerOpen && (

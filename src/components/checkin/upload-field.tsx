@@ -1,3 +1,5 @@
+import { useRef } from "react";
+import type { ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { IconCamera, IconFile } from "@/components/ui/icons";
 import type { Upload } from "@/lib/types";
@@ -5,16 +7,30 @@ import type { Upload } from "@/lib/types";
 interface UploadFieldProps {
   label: string;
   upload: Upload;
-  onCapture: () => void;
-  onRetry: () => void;
+  onSelectFile: (file: File) => void;
   onReplace: () => void;
 }
 
 /** The four states an ID photo upload moves through: empty, uploading, done, failed. */
-export function UploadField({ label, upload, onCapture, onRetry, onReplace }: UploadFieldProps) {
+export function UploadField({ label, upload, onSelectFile, onReplace }: UploadFieldProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const openPicker = () => inputRef.current?.click();
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (file) onSelectFile(file);
+  };
+
   return (
     <div>
       <div className="mb-2 text-[11px] tracking-widest uppercase text-ink/65">{label}</div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,application/pdf"
+        className="hidden"
+        onChange={handleChange}
+      />
 
       {upload.status === "empty" && (
         <div className="grid gap-2.5 border-2 border-dashed border-neutral-500 p-4">
@@ -22,11 +38,11 @@ export function UploadField({ label, upload, onCapture, onRetry, onReplace }: Up
             A clear photo of the document. Glare is fine as long as the number is readable.
           </p>
           <div className="grid grid-cols-2 gap-2">
-            <Button variant="primary" block className="min-h-12" onClick={onCapture}>
+            <Button variant="primary" block className="min-h-12" onClick={openPicker}>
               <IconCamera />
               Take photo
             </Button>
-            <Button variant="secondary" block className="min-h-12" onClick={onCapture}>
+            <Button variant="secondary" block className="min-h-12" onClick={openPicker}>
               <IconFile />
               Choose file
             </Button>
@@ -71,10 +87,10 @@ export function UploadField({ label, upload, onCapture, onRetry, onReplace }: Up
             you&apos;re on a weak connection.
           </p>
           <div className="flex gap-2">
-            <Button variant="primary" className="min-h-11" onClick={onRetry}>
+            <Button variant="primary" className="min-h-11" onClick={openPicker}>
               Try again
             </Button>
-            <Button variant="secondary" className="min-h-11" onClick={onCapture}>
+            <Button variant="secondary" className="min-h-11" onClick={openPicker}>
               Take a new photo
             </Button>
           </div>

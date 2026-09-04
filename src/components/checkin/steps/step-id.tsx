@@ -13,8 +13,7 @@ interface StepIdProps {
   isForeign: boolean;
   isAadhaar: boolean;
   effectiveDocType: DocType;
-  onCapture: () => void;
-  onRetry: () => void;
+  onSelectFile: (file: File) => void;
   onReplace: () => void;
 }
 
@@ -24,8 +23,7 @@ export function StepId({
   isForeign,
   isAadhaar,
   effectiveDocType,
-  onCapture,
-  onRetry,
+  onSelectFile,
   onReplace,
 }: StepIdProps) {
   const hostFirstName = HOST.name.split(" ")[0];
@@ -129,8 +127,7 @@ export function StepId({
               : `Photo of your ${effectiveDocType.toLowerCase()} — required`
         }
         upload={primary.upload}
-        onCapture={onCapture}
-        onRetry={onRetry}
+        onSelectFile={onSelectFile}
         onReplace={onReplace}
       />
       <p className="m-0 flex gap-2 border-t-2 border-ink/40 pt-2.5 text-xs leading-normal">

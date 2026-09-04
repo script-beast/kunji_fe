@@ -28,6 +28,7 @@ export interface Upload {
   status: UploadStatus;
   pct: number;
   fileName?: string;
+  documentFileId?: string;
 }
 
 export interface PrimaryGuest {

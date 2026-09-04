@@ -1,16 +1,20 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Tag } from "@/components/ui/tag";
-import { BOOKING, HOST } from "@/lib/constants";
+import { HOST } from "@/lib/constants";
 import { maskPhone } from "@/lib/utils";
 
-export function SubmittedScreen() {
+interface SubmittedScreenProps {
+  reference?: string;
+}
+
+export function SubmittedScreen({ reference }: SubmittedScreenProps = {}) {
   const hostFirstName = HOST.name.split(" ")[0];
 
   const rows: [string, string][] = [
     ["Door code", `On WhatsApp to ${maskPhone("98765 43210")}`],
-    ["Reference", BOOKING.reference],
-    ["Submitted", BOOKING.submittedAt],
+    ["Reference", reference || "—"],
+    ["Submitted", new Date().toLocaleString()],
   ];
 
   return (

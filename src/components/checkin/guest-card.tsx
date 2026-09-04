@@ -11,8 +11,7 @@ interface GuestCardProps {
   index: number;
   onUpdate: (patch: Partial<CoGuest>) => void;
   onRemove: () => void;
-  onCapture: () => void;
-  onRetry: () => void;
+  onSelectFile: (file: File) => void;
   onReplace: () => void;
 }
 
@@ -21,8 +20,7 @@ export function GuestCard({
   index,
   onUpdate,
   onRemove,
-  onCapture,
-  onRetry,
+  onSelectFile,
   onReplace,
 }: GuestCardProps) {
   const isAadhaar = guest.docType === "Aadhaar";
@@ -83,8 +81,7 @@ export function GuestCard({
       <UploadField
         label={isAadhaar ? "Masked Aadhaar photo" : `${guest.docType} photo`}
         upload={guest.upload}
-        onCapture={onCapture}
-        onRetry={onRetry}
+        onSelectFile={onSelectFile}
         onReplace={onReplace}
       />
       <p className="m-0 border-t-2 border-ink/40 pt-2 text-xs leading-normal">

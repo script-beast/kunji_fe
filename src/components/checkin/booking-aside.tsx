@@ -1,13 +1,18 @@
-import { BOOKING, HOST, PROPERTY } from "@/lib/constants";
+import { HOST, PROPERTY } from "@/lib/constants";
+
+interface BookingAsideProps {
+  dates?: string;
+  guests?: number;
+}
 
 /** Persistent context panel shown alongside the form on wide screens only. */
-export function BookingAside() {
+export function BookingAside({ dates, guests }: BookingAsideProps = {}) {
   const hostFirstName = HOST.name.split(" ")[0];
 
   const facts: [string, string][] = [
     ["Flat", PROPERTY.name],
-    ["Dates", "4–7 Sep 2026"],
-    ["Guests", `${BOOKING.guestCount} guests`],
+    ["Dates", dates || "Not set"],
+    ["Guests", guests ? `${guests} guests` : "Not set"],
     ["Host", HOST.name],
   ];
 

@@ -5,11 +5,20 @@ import { Button } from "@/components/ui/button";
 import { Tag } from "@/components/ui/tag";
 import { IconCopy } from "@/components/ui/icons";
 import { ContactCard } from "@/components/booking/contact-card";
-import { ACCESS, BOOKING, CARETAKER, HOST, PROPERTY } from "@/lib/constants";
+import { ACCESS, CARETAKER, HOST, PROPERTY } from "@/lib/constants";
+import type { GuestBooking } from "@/lib/api";
+import { formatShortDate } from "@/lib/utils";
 
-export function BookingScreen() {
+interface BookingScreenProps {
+  gateCode?: string;
+  bookingReference?: string;
+  booking?: GuestBooking;
+}
+
+export function BookingScreen({ gateCode, bookingReference, booking }: BookingScreenProps = {}) {
   const [copied, setCopied] = useState<"code" | "wifi" | null>(null);
   const hostFirstName = HOST.name.split(" ")[0];
+  const doorCode = gateCode || ACCESS.doorCode;
 
   const copy = (which: "code" | "wifi", text: string) => {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
@@ -20,9 +29,12 @@ export function BookingScreen() {
   };
 
   const stayRows: [string, string][] = [
-    ["Check in", `${BOOKING.checkInDate}, from ${BOOKING.checkInTime}`],
-    ["Check out", `${BOOKING.checkOutDate}, by ${BOOKING.checkOutTime}`],
-    ["Guests", `${BOOKING.guestCount} guests · register accepted`],
+    ["Check in", formatShortDate(booking?.checkInDate) || "Not set"],
+    ["Check out", formatShortDate(booking?.checkOutDate) || "Not set"],
+    [
+      "Guests",
+      booking?.noOfGuests ? `${booking.noOfGuests} guests · register accepted` : "Register accepted",
+    ],
     ["Flat", PROPERTY.flatLine],
   ];
 
@@ -31,7 +43,7 @@ export function BookingScreen() {
       <div>
         <div className="mb-2 flex items-baseline justify-between gap-2.5">
           <Tag variant="accent">Approved by {hostFirstName}</Tag>
-          <span className="text-[11px] text-neutral-700">{BOOKING.reference}</span>
+          <span className="text-[11px] text-neutral-700">{bookingReference || ""}</span>
         </div>
         <h3 className="mb-1 text-[26px] sm:text-[32px]">Your booking</h3>
         <p className="m-0 text-[13px] text-neutral-700 sm:text-sm">
@@ -46,18 +58,17 @@ export function BookingScreen() {
               Door code
             </div>
             <div className="font-heading text-[44px] font-extrabold leading-none tracking-[0.16em] sm:text-[52px]">
-              {ACCESS.doorCode}
+              {doorCode}
             </div>
             <p className="mt-2.5 text-[12.5px] text-pretty">
-              Press the code on the keypad, then <strong>#</strong>. Live from 2 pm Friday until
-              11 am Monday. It stops working after check-out.
+              Press the code on the keypad, then <strong>#</strong>. Live until check-out.
             </p>
           </div>
           <Button
             variant="primary"
             block
             className="m-0 min-h-12"
-            onClick={() => copy("code", ACCESS.doorCode)}
+            onClick={() => copy("code", doorCode)}
           >
             <IconCopy />
             {copied === "code" ? "Copied to clipboard" : "Copy the code"}

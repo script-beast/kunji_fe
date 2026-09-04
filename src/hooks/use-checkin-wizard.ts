@@ -1,12 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  ARRIVAL_WINDOWS,
-  COUNTRY_CODES,
-  PORTS_OF_ENTRY,
-  VISA_TYPES,
-} from "@/lib/constants";
+import { useCallback, useMemo, useState } from "react";
+import { ARRIVAL_WINDOWS, COUNTRY_CODES, PORTS_OF_ENTRY, VISA_TYPES } from "@/lib/constants";
+import { getErrorMessage, submitGuestForm, uploadGuestDocument } from "@/lib/api";
+import type { GuestBooking } from "@/lib/api";
 import type { ArrivalWindow, CoGuest, PrimaryGuest, Upload, WizardStep } from "@/lib/types";
 
 const EMPTY_UPLOAD: Upload = { status: "empty", pct: 0 };
@@ -24,14 +21,14 @@ function makeCoGuest(): CoGuest {
   };
 }
 
-function makePrimaryGuest(): PrimaryGuest {
+function makePrimaryGuest(initial?: GuestBooking): PrimaryGuest {
   return {
-    fullName: "",
-    dob: "",
+    fullName: initial?.name || "",
+    dob: initial?.dob ? initial.dob.slice(0, 10) : "",
     countryCode: COUNTRY_CODES[0],
-    phone: "",
-    email: "",
-    nationality: "India",
+    phone: initial?.phone || "",
+    email: initial?.email || "",
+    nationality: initial?.nationality || "India",
     docType: "Passport",
     docNumber: "",
     upload: { ...EMPTY_UPLOAD },
@@ -43,59 +40,63 @@ function makePrimaryGuest(): PrimaryGuest {
   };
 }
 
+interface UseCheckinWizardOptions {
+  formToken: string;
+  booking?: GuestBooking;
+}
+
 /**
- * Drives the five-step guest check-in wizard: field state, the simulated ID
- * upload "network" (progress ticks, occasional drop at ~60% so the retry UI
- * is reachable), and the per-step validation that gates the footer button.
+ * Drives the five-step guest check-in wizard: field state, the real ID-photo
+ * upload (proxied through the token-scoped public API), and the per-step
+ * validation that gates the footer button.
  */
-export function useCheckinWizard(maxGuests: number) {
+export function useCheckinWizard({ formToken, booking }: UseCheckinWizardOptions) {
+  const maxGuests = booking?.noOfGuests || 1;
+
   const [step, setStep] = useState<WizardStep>(1);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | undefined>(undefined);
   const [arrival, setArrival] = useState<ArrivalWindow>(ARRIVAL_WINDOWS[2]);
-  const [primary, setPrimary] = useState<PrimaryGuest>(makePrimaryGuest);
+  const [primary, setPrimary] = useState<PrimaryGuest>(() => makePrimaryGuest(booking));
   const [natPickerOpen, setNatPickerOpen] = useState(false);
   const [coGuests, setCoGuests] = useState<CoGuest[]>(() => [makeCoGuest()]);
   const [consent, setConsent] = useState(false);
 
-  const timers = useRef<Record<string, ReturnType<typeof setInterval>>>({});
-  useEffect(() => {
-    const active = timers.current;
-    return () => {
-      Object.values(active).forEach(clearInterval);
-    };
-  }, []);
-
-  const runUpload = useCallback((key: string, apply: (upload: Upload) => void) => {
-    clearInterval(timers.current[key]);
-    let pct = 0;
-    const willDrop = Math.random() < 0.12;
-    apply({ status: "uploading", pct: 0 });
-    timers.current[key] = setInterval(() => {
-      pct += 14;
-      if (willDrop && pct >= 60) {
-        clearInterval(timers.current[key]);
-        apply({ status: "failed", pct: 60 });
-        return;
-      }
-      if (pct >= 100) {
-        clearInterval(timers.current[key]);
-        apply({ status: "done", pct: 100, fileName: "id-page.jpg" });
-        return;
-      }
+  const runUpload = useCallback(
+    (key: string, file: File, apply: (upload: Upload) => void) => {
+      let pct = 10;
       apply({ status: "uploading", pct });
-    }, 260);
-  }, []);
+      const ticker = setInterval(() => {
+        pct = Math.min(90, pct + 12);
+        apply({ status: "uploading", pct });
+      }, 260);
+
+      uploadGuestDocument(formToken, file)
+        .then(({ documentFileId }) => {
+          clearInterval(ticker);
+          apply({ status: "done", pct: 100, fileName: file.name, documentFileId });
+        })
+        .catch(() => {
+          clearInterval(ticker);
+          apply({ status: "failed", pct });
+        });
+    },
+    [formToken],
+  );
 
   const updatePrimary = useCallback((patch: Partial<PrimaryGuest>) => {
     setPrimary((prev) => ({ ...prev, ...patch }));
   }, []);
 
-  const uploadPrimary = useCallback(() => {
-    runUpload("primary", (upload) => setPrimary((prev) => ({ ...prev, upload })));
-  }, [runUpload]);
+  const selectPrimaryFile = useCallback(
+    (file: File) => {
+      runUpload("primary", file, (upload) => setPrimary((prev) => ({ ...prev, upload })));
+    },
+    [runUpload],
+  );
 
   const resetPrimaryUpload = useCallback(() => {
-    clearInterval(timers.current.primary);
     setPrimary((prev) => ({ ...prev, upload: { ...EMPTY_UPLOAD } }));
   }, []);
 
@@ -104,7 +105,6 @@ export function useCheckinWizard(maxGuests: number) {
   }, [maxGuests]);
 
   const removeGuest = useCallback((id: string) => {
-    clearInterval(timers.current[id]);
     setCoGuests((prev) => prev.filter((g) => g.id !== id));
   }, []);
 
@@ -112,19 +112,18 @@ export function useCheckinWizard(maxGuests: number) {
     setCoGuests((prev) => prev.map((g) => (g.id === id ? { ...g, ...patch } : g)));
   }, []);
 
-  const uploadGuest = useCallback(
-    (id: string) => {
-      runUpload(id, (upload) =>
-        setCoGuests((prev) => prev.map((g) => (g.id === id ? { ...g, upload } : g)))
+  const selectGuestFile = useCallback(
+    (id: string, file: File) => {
+      runUpload(id, file, (upload) =>
+        setCoGuests((prev) => prev.map((g) => (g.id === id ? { ...g, upload } : g))),
       );
     },
-    [runUpload]
+    [runUpload],
   );
 
   const resetGuestUpload = useCallback((id: string) => {
-    clearInterval(timers.current[id]);
     setCoGuests((prev) =>
-      prev.map((g) => (g.id === id ? { ...g, upload: { ...EMPTY_UPLOAD } } : g))
+      prev.map((g) => (g.id === id ? { ...g, upload: { ...EMPTY_UPLOAD } } : g)),
     );
   }, []);
 
@@ -147,22 +146,52 @@ export function useCheckinWizard(maxGuests: number) {
       case 4:
         return shortBy === 0 && guestUploadsMissing === 0;
       case 5:
-        return consent;
+        return consent && !submitting;
       default:
         return true;
     }
-  }, [step, primary.upload.status, shortBy, guestUploadsMissing, consent]);
+  }, [step, primary.upload.status, shortBy, guestUploadsMissing, consent, submitting]);
 
-  const submit = useCallback(() => setSubmitted(true), []);
+  const submit = useCallback(async () => {
+    setSubmitError(undefined);
+    setSubmitting(true);
+    try {
+      await submitGuestForm(formToken, {
+        name: primary.fullName,
+        email: primary.email || undefined,
+        phone: primary.phone ? `${primary.countryCode} ${primary.phone}` : undefined,
+        dob: primary.dob || undefined,
+        nationality: primary.nationality,
+        documentType: effectiveDocType,
+        documentFile: primary.upload.documentFileId,
+        guestDetails: coGuests
+          .filter((g) => g.name.trim())
+          .map((g) => ({
+            name: g.name,
+            dob: g.dob,
+            documentType: g.docType,
+            documentFile: g.upload.documentFileId as string,
+          })),
+      });
+      setSubmitted(true);
+    } catch (error) {
+      setSubmitError(getErrorMessage(error, "Could not submit your details. Please try again."));
+    } finally {
+      setSubmitting(false);
+    }
+  }, [formToken, primary, effectiveDocType, coGuests]);
 
   return {
     step,
     submitted,
+    submitting,
+    submitError,
+    maxGuests,
     arrival,
     setArrival,
     primary,
     updatePrimary,
-    uploadPrimary,
+    selectPrimaryFile,
     resetPrimaryUpload,
     natPickerOpen,
     openNationalityPicker: () => setNatPickerOpen(true),
@@ -175,7 +204,7 @@ export function useCheckinWizard(maxGuests: number) {
     addGuest,
     removeGuest,
     updateGuest,
-    uploadGuest,
+    selectGuestFile,
     resetGuestUpload,
     consent,
     setConsent,
