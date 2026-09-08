@@ -31,6 +31,7 @@ export function StepReview({
   arrival,
   primary,
   coGuests,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- kept for when Form C is re-enabled
   isForeign,
   isAadhaar,
   effectiveDocType,
@@ -51,13 +52,14 @@ export function StepReview({
           : "Not attached",
     },
   ];
-  if (isForeign) {
-    idRows.push(
-      { k: "Visa", v: `${primary.visaNumber || "Not entered"} · ${primary.visaType}` },
-      { k: "Entered India", v: primary.arrivedOn || "Not entered" },
-      { k: "Port", v: primary.portOfEntry }
-    );
-  }
+  // Form C (foreign nationals) — disabled on the frontend for now.
+  // if (isForeign) {
+  //   idRows.push(
+  //     { k: "Visa", v: `${primary.visaNumber || "Not entered"} · ${primary.visaType}` },
+  //     { k: "Entered India", v: primary.arrivedOn || "Not entered" },
+  //     { k: "Port", v: primary.portOfEntry }
+  //   );
+  // }
 
   const sections: ReviewSection[] = [
     {

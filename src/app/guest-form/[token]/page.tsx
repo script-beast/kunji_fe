@@ -6,6 +6,7 @@ import { CheckinWizard } from "@/components/checkin/checkin-wizard";
 import { BookingScreen } from "@/components/booking/booking-screen";
 import { SubmittedScreen } from "@/components/checkin/screens/submitted-screen";
 import { ExpiredScreen } from "@/components/expired/expired-screen";
+import { StatusShell } from "@/components/layout/status-shell";
 import { getBookingByToken, getErrorMessage } from "@/lib/api";
 import type { GuestFormResponse } from "@/lib/api";
 
@@ -47,16 +48,20 @@ export default function GuestFormPage() {
 
   if (error || !data) {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center">
-        <ExpiredScreen />
+      <main className="flex flex-1 flex-col">
+        <StatusShell>
+          <ExpiredScreen />
+        </StatusShell>
       </main>
     );
   }
 
   if (data.viewState === "expired") {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center">
-        <ExpiredScreen />
+      <main className="flex flex-1 flex-col">
+        <StatusShell>
+          <ExpiredScreen />
+        </StatusShell>
       </main>
     );
   }
@@ -64,19 +69,23 @@ export default function GuestFormPage() {
   if (data.viewState === "approved") {
     return (
       <main className="flex flex-1 flex-col">
-        <BookingScreen
-          gateCode={data.gateCode}
-          bookingReference={data.booking?.bookingMyId}
-          booking={data.booking}
-        />
+        <StatusShell>
+          <BookingScreen
+            gateCode={data.gateCode}
+            bookingReference={data.booking?.bookingMyId}
+            booking={data.booking}
+          />
+        </StatusShell>
       </main>
     );
   }
 
   if (data.viewState === "pending_review") {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center">
-        <SubmittedScreen reference={data.booking?.bookingMyId} />
+      <main className="flex flex-1 flex-col">
+        <StatusShell>
+          <SubmittedScreen reference={data.booking?.bookingMyId} />
+        </StatusShell>
       </main>
     );
   }

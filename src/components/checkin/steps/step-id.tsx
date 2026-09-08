@@ -1,11 +1,16 @@
 import { Field } from "@/components/ui/field";
-import { Input, Textarea } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { RadioOption } from "@/components/ui/radio-option";
 import { IconLock, IconShield } from "@/components/ui/icons";
 import { UploadField } from "@/components/checkin/upload-field";
-import { DOC_TYPES, HOST, PORTS_OF_ENTRY, VISA_TYPES } from "@/lib/constants";
-import type { DocType, PrimaryGuest, VisaType } from "@/lib/types";
+import { DOC_TYPES, HOST } from "@/lib/constants";
+import type { DocType, PrimaryGuest } from "@/lib/types";
+// Form C (foreign nationals) is disabled on the frontend for now — see the
+// commented-out blocks below. Re-add these imports if it's turned back on:
+// import { Textarea } from "@/components/ui/input";
+// import { Select } from "@/components/ui/select";
+// import { PORTS_OF_ENTRY, VISA_TYPES } from "@/lib/constants";
+// import type { VisaType } from "@/lib/types";
 
 interface StepIdProps {
   primary: PrimaryGuest;
@@ -37,6 +42,7 @@ export function StepId({
         </p>
       </div>
 
+      {/* Form C (foreign nationals) — disabled on the frontend for now.
       {isForeign && (
         <div className="border-l-2 border-accent bg-accent-100 px-3.5 py-3">
           <div className="mb-1 text-[11px] tracking-widest uppercase text-accent-700">
@@ -49,6 +55,7 @@ export function StepId({
           </p>
         </div>
       )}
+      */}
 
       <div>
         <div className="mb-2 text-[11px] tracking-widest uppercase text-ink/65">
@@ -138,6 +145,7 @@ export function StepId({
         </span>
       </p>
 
+      {/* Form C (foreign nationals) — disabled on the frontend for now.
       {isForeign && (
         <div className="grid gap-3.5 border-t-2 border-ink/40 pt-4 sm:gap-4">
           <div className="text-[11px] tracking-widest uppercase text-ink/65">
@@ -198,6 +206,7 @@ export function StepId({
           </div>
         </div>
       )}
+      */}
     </div>
   );
 }

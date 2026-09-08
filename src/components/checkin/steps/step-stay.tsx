@@ -1,21 +1,36 @@
 import { Field } from "@/components/ui/field";
 import { Select } from "@/components/ui/select";
-import { ARRIVAL_WINDOWS, BOOKING, HOST, PROPERTY } from "@/lib/constants";
+import { ARRIVAL_WINDOWS, HOST, PROPERTY } from "@/lib/constants";
+import type { GuestBooking } from "@/lib/api";
 import type { ArrivalWindow } from "@/lib/types";
+import { formatTime, formatWeekdayDate } from "@/lib/utils";
 
 interface StepStayProps {
+  booking?: GuestBooking;
   arrival: ArrivalWindow;
   onArrivalChange: (value: ArrivalWindow) => void;
 }
 
-export function StepStay({ arrival, onArrivalChange }: StepStayProps) {
+export function StepStay({ booking, arrival, onArrivalChange }: StepStayProps) {
   const hostFirstName = HOST.name.split(" ")[0];
+
+  const checkInDay = formatWeekdayDate(booking?.checkInDate);
+  const checkOutDay = formatWeekdayDate(booking?.checkOutDate);
+  const checkInTime = formatTime(booking?.checkInDate);
+  const checkOutTime = formatTime(booking?.checkOutDate);
+  const guestCount = booking?.noOfGuests || 1;
 
   const rows: [string, string][] = [
     ["Flat", PROPERTY.name],
-    ["Check in", `${BOOKING.checkInDate}, after ${BOOKING.checkInTime}`],
-    ["Check out", `${BOOKING.checkOutDate}, by ${BOOKING.checkOutTime}`],
-    ["Booked for", `${BOOKING.guestCount} guests`],
+    [
+      "Check in",
+      checkInDay ? `${checkInDay}${checkInTime ? `, after ${checkInTime}` : ""}` : "Not set",
+    ],
+    [
+      "Check out",
+      checkOutDay ? `${checkOutDay}${checkOutTime ? `, by ${checkOutTime}` : ""}` : "Not set",
+    ],
+    ["Booked for", `${guestCount} guest${guestCount === 1 ? "" : "s"}`],
   ];
 
   return (

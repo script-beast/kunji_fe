@@ -29,3 +29,19 @@ export function formatDateRange(checkIn?: string, checkOut?: string): string | u
   if (from && to) return `${from} – ${to}`;
   return from || to;
 }
+
+/** Formats an ISO date string as e.g. "Fri 4 Sep". Returns undefined for missing/invalid input. */
+export function formatWeekdayDate(value?: string): string | undefined {
+  if (!value) return undefined;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return undefined;
+  return date.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+}
+
+/** Formats the time portion of an ISO date string as e.g. "2:00 pm". Returns undefined for missing/invalid input. */
+export function formatTime(value?: string): string | undefined {
+  if (!value) return undefined;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return undefined;
+  return date.toLocaleTimeString("en-GB", { hour: "numeric", minute: "2-digit" }).toLowerCase();
+}

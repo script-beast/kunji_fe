@@ -3,10 +3,21 @@
 import { useCallback, useMemo, useState } from "react";
 import { ARRIVAL_WINDOWS, COUNTRY_CODES, PORTS_OF_ENTRY, VISA_TYPES } from "@/lib/constants";
 import { getErrorMessage, submitGuestForm, uploadGuestDocument } from "@/lib/api";
-import type { GuestBooking } from "@/lib/api";
-import type { ArrivalWindow, CoGuest, PrimaryGuest, Upload, WizardStep } from "@/lib/types";
+import type { GuestBooking, GuestCoGuestDetail } from "@/lib/api";
+import type { ArrivalWindow, CoGuest, DocType, PrimaryGuest, Upload, WizardStep } from "@/lib/types";
 
 const EMPTY_UPLOAD: Upload = { status: "empty", pct: 0 };
+
+function uploadFromDocumentFile(documentFile?: GuestCoGuestDetail["documentFile"]): Upload {
+  return documentFile
+    ? {
+        status: "done",
+        pct: 100,
+        fileName: documentFile.fileName,
+        documentFileId: documentFile._id,
+      }
+    : { ...EMPTY_UPLOAD };
+}
 
 let guestSeq = 1;
 function makeCoGuest(): CoGuest {
@@ -21,6 +32,18 @@ function makeCoGuest(): CoGuest {
   };
 }
 
+function makeCoGuestFromDetail(detail: GuestCoGuestDetail): CoGuest {
+  guestSeq += 1;
+  return {
+    id: `guest-${guestSeq}`,
+    name: detail.name || "",
+    dob: detail.dob ? detail.dob.slice(0, 10) : "",
+    docType: (detail.documentType as DocType) || "Passport",
+    docNumber: "",
+    upload: uploadFromDocumentFile(detail.documentFile ?? undefined),
+  };
+}
+
 function makePrimaryGuest(initial?: GuestBooking): PrimaryGuest {
   return {
     fullName: initial?.name || "",
@@ -29,9 +52,9 @@ function makePrimaryGuest(initial?: GuestBooking): PrimaryGuest {
     phone: initial?.phone || "",
     email: initial?.email || "",
     nationality: initial?.nationality || "India",
-    docType: "Passport",
+    docType: (initial?.documentType as DocType) || "Passport",
     docNumber: "",
-    upload: { ...EMPTY_UPLOAD },
+    upload: uploadFromDocumentFile(initial?.documentFile ?? undefined),
     visaNumber: "",
     visaType: VISA_TYPES[0],
     arrivedOn: "",
@@ -60,7 +83,11 @@ export function useCheckinWizard({ formToken, booking }: UseCheckinWizardOptions
   const [arrival, setArrival] = useState<ArrivalWindow>(ARRIVAL_WINDOWS[2]);
   const [primary, setPrimary] = useState<PrimaryGuest>(() => makePrimaryGuest(booking));
   const [natPickerOpen, setNatPickerOpen] = useState(false);
-  const [coGuests, setCoGuests] = useState<CoGuest[]>(() => [makeCoGuest()]);
+  const [coGuests, setCoGuests] = useState<CoGuest[]>(() =>
+    booking?.guestDetails?.length
+      ? booking.guestDetails.map(makeCoGuestFromDetail)
+      : [makeCoGuest()],
+  );
   const [consent, setConsent] = useState(false);
 
   const runUpload = useCallback(
@@ -186,6 +213,7 @@ export function useCheckinWizard({ formToken, booking }: UseCheckinWizardOptions
     submitted,
     submitting,
     submitError,
+    booking,
     maxGuests,
     arrival,
     setArrival,

@@ -2,6 +2,20 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export type ViewState = "form" | "pending_review" | "approved" | "expired";
 
+export interface GuestDocumentFile {
+  _id: string;
+  fileName: string;
+  filePath: string;
+}
+
+export interface GuestCoGuestDetail {
+  _id: string;
+  name: string;
+  dob?: string;
+  documentType?: string;
+  documentFile?: GuestDocumentFile | null;
+}
+
 export interface GuestBooking {
   _id: string;
   bookingMyId: string;
@@ -13,7 +27,9 @@ export interface GuestBooking {
   checkInDate?: string;
   checkOutDate?: string;
   documentType?: string;
+  documentFile?: GuestDocumentFile | null;
   noOfGuests?: number;
+  guestDetails?: GuestCoGuestDetail[];
 }
 
 export interface GuestRoom {

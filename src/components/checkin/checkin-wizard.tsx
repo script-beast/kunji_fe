@@ -26,7 +26,13 @@ const TOTAL_STEPS = STEP_NAMES.length;
 function StepContent({ wizard }: { wizard: WizardState }) {
   switch (wizard.step) {
     case 1:
-      return <StepStay arrival={wizard.arrival} onArrivalChange={wizard.setArrival} />;
+      return (
+        <StepStay
+          booking={wizard.booking}
+          arrival={wizard.arrival}
+          onArrivalChange={wizard.setArrival}
+        />
+      );
     case 2:
       return (
         <StepAbout
