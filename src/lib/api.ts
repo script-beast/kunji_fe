@@ -21,11 +21,13 @@ export interface GuestBooking {
   bookingMyId: string;
   name: string;
   email?: string;
+  countryCode?: string;
   phone?: string;
   dob?: string;
   nationality?: string;
   checkInDate?: string;
   checkOutDate?: string;
+  expectedCheckInTime?: string;
   documentType?: string;
   documentFile?: GuestDocumentFile | null;
   noOfGuests?: number;
@@ -84,17 +86,38 @@ export async function uploadGuestDocument(
 export interface SubmitGuestFormPayload {
   name: string;
   email?: string;
+  countryCode?: string;
   phone?: string;
   dob?: string;
   nationality?: string;
   documentType?: string;
   documentFile?: string;
+  expectedCheckInTime?: string;
   guestDetails?: {
     name: string;
     dob: string;
     documentType: string;
     documentFile: string;
   }[];
+}
+
+export type SaveGuestFormPayload = Omit<SubmitGuestFormPayload, "name" | "guestDetails"> & {
+  name?: string;
+  guestDetails?: {
+    name?: string;
+    dob?: string;
+    documentType?: string;
+    documentFile?: string;
+  }[];
+};
+
+export async function saveGuestForm(formToken: string, payload: SaveGuestFormPayload) {
+  const response = await fetch(`${API_BASE_URL}/api/guest-form/${formToken}/save`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return unwrap<{ formToken: string }>(response);
 }
 
 export async function submitGuestForm(formToken: string, payload: SubmitGuestFormPayload) {

@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { ARRIVAL_WINDOWS, COUNTRY_CODES, PORTS_OF_ENTRY, VISA_TYPES } from "@/lib/constants";
-import { getErrorMessage, submitGuestForm, uploadGuestDocument } from "@/lib/api";
+import { getErrorMessage, saveGuestForm, submitGuestForm, uploadGuestDocument } from "@/lib/api";
 import type { GuestBooking, GuestCoGuestDetail } from "@/lib/api";
 import type { ArrivalWindow, CoGuest, DocType, PrimaryGuest, Upload, WizardStep } from "@/lib/types";
 
@@ -45,11 +45,19 @@ function makeCoGuestFromDetail(detail: GuestCoGuestDetail): CoGuest {
 }
 
 function makePrimaryGuest(initial?: GuestBooking): PrimaryGuest {
+  const storedPhone = initial?.phone || "";
+  const parsedCountryCode = storedPhone.match(/^(\+\d+)\s+/)?.[1];
+  const countryCode = initial?.countryCode || parsedCountryCode || COUNTRY_CODES[0];
+  const phone = (parsedCountryCode ? storedPhone.replace(/^\+\d+\s+/, "") : storedPhone).replace(
+    /\D/g,
+    "",
+  ).slice(0, 10);
+
   return {
     fullName: initial?.name || "",
     dob: initial?.dob ? initial.dob.slice(0, 10) : "",
-    countryCode: COUNTRY_CODES[0],
-    phone: initial?.phone || "",
+    countryCode,
+    phone,
     email: initial?.email || "",
     nationality: initial?.nationality || "India",
     docType: (initial?.documentType as DocType) || "Passport",
@@ -75,12 +83,15 @@ interface UseCheckinWizardOptions {
  */
 export function useCheckinWizard({ formToken, booking }: UseCheckinWizardOptions) {
   const maxGuests = booking?.noOfGuests || 1;
+  const initialArrival = ARRIVAL_WINDOWS.find((window) => window === booking?.expectedCheckInTime)
+    ?? ARRIVAL_WINDOWS[2];
 
   const [step, setStep] = useState<WizardStep>(1);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [submitError, setSubmitError] = useState<string | undefined>(undefined);
-  const [arrival, setArrival] = useState<ArrivalWindow>(ARRIVAL_WINDOWS[2]);
+  const [arrival, setArrival] = useState<ArrivalWindow>(initialArrival);
   const [primary, setPrimary] = useState<PrimaryGuest>(() => makePrimaryGuest(booking));
   const [natPickerOpen, setNatPickerOpen] = useState(false);
   const [coGuests, setCoGuests] = useState<CoGuest[]>(() =>
@@ -156,28 +167,68 @@ export function useCheckinWizard({ formToken, booking }: UseCheckinWizardOptions
 
   const goTo = useCallback((next: WizardStep) => setStep(next), []);
   const back = useCallback(() => setStep((s) => (s > 1 ? ((s - 1) as WizardStep) : s)), []);
-  const advance = useCallback(() => setStep((s) => (s < 5 ? ((s + 1) as WizardStep) : s)), []);
-
-  const isForeign = primary.nationality !== "India";
-  const effectiveDocType = isForeign ? "Passport" : primary.docType;
-  const isAadhaar = effectiveDocType === "Aadhaar";
+  // const isForeign = primary.nationality !== "India";
+  // const isForeign = false; // TODO: temporarily disable foreigner flow until we have a better UX for it
+  const effectiveDocType = primary.docType;
+  // const isAadhaar = effectiveDocType === "Aadhaar";
 
   const enteredGuestCount = 1 + coGuests.filter((g) => g.name.trim().length > 0).length;
   const shortBy = Math.max(0, maxGuests - enteredGuestCount);
-  const guestUploadsMissing = coGuests.filter((g) => g.upload.status !== "done").length;
+  const guestUploadsMissing = coGuests.filter(
+    (guest) => guest.name.trim().length > 0 && guest.upload.status !== "done",
+  ).length;
+  const validEmail = !primary.email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(primary.email);
+  const validPhone = !primary.phone || /^\d{10}$/.test(primary.phone);
+  const aboutStepValid =
+    primary.fullName.trim().length > 0 && Boolean(primary.dob) && validEmail && validPhone;
 
   const canContinue = useMemo(() => {
     switch (step) {
       case 3:
-        return primary.upload.status === "done";
+        return aboutStepValid && primary.upload.status === "done";
       case 4:
         return shortBy === 0 && guestUploadsMissing === 0;
       case 5:
-        return consent && !submitting;
+        return consent && !submitting && !saving;
       default:
-        return true;
+        return step === 1 || aboutStepValid;
     }
-  }, [step, primary.upload.status, shortBy, guestUploadsMissing, consent, submitting]);
+  }, [step, aboutStepValid, primary.upload.status, shortBy, guestUploadsMissing, consent, submitting, saving]);
+
+  const draftPayload = useCallback(
+    () => ({
+      name: primary.fullName || undefined,
+      email: primary.email || undefined,
+      countryCode: primary.countryCode,
+      phone: primary.phone || undefined,
+      dob: primary.dob || undefined,
+      nationality: primary.nationality || undefined,
+      documentType: effectiveDocType,
+      documentFile: primary.upload.documentFileId,
+      expectedCheckInTime: arrival,
+      guestDetails: coGuests.map((guest) => ({
+        name: guest.name || undefined,
+        dob: guest.dob || undefined,
+        documentType: guest.docType || undefined,
+        documentFile: guest.upload.documentFileId,
+      })),
+    }),
+    [primary, effectiveDocType, arrival, coGuests],
+  );
+
+  const advance = useCallback(async () => {
+    if (!canContinue || step >= 5) return;
+    setSubmitError(undefined);
+    setSaving(true);
+    try {
+      await saveGuestForm(formToken, draftPayload());
+      setStep((current) => (current + 1) as WizardStep);
+    } catch (error) {
+      setSubmitError(getErrorMessage(error, "Could not save your progress. Please try again."));
+    } finally {
+      setSaving(false);
+    }
+  }, [canContinue, step, formToken, draftPayload]);
 
   const submit = useCallback(async () => {
     setSubmitError(undefined);
@@ -186,11 +237,13 @@ export function useCheckinWizard({ formToken, booking }: UseCheckinWizardOptions
       await submitGuestForm(formToken, {
         name: primary.fullName,
         email: primary.email || undefined,
-        phone: primary.phone ? `${primary.countryCode} ${primary.phone}` : undefined,
+        countryCode: primary.countryCode,
+        phone: primary.phone || undefined,
         dob: primary.dob || undefined,
         nationality: primary.nationality,
         documentType: effectiveDocType,
         documentFile: primary.upload.documentFileId,
+        expectedCheckInTime: arrival,
         guestDetails: coGuests
           .filter((g) => g.name.trim())
           .map((g) => ({
@@ -212,6 +265,7 @@ export function useCheckinWizard({ formToken, booking }: UseCheckinWizardOptions
     step,
     submitted,
     submitting,
+    saving,
     submitError,
     booking,
     maxGuests,
@@ -240,9 +294,9 @@ export function useCheckinWizard({ formToken, booking }: UseCheckinWizardOptions
     back,
     advance,
     submit,
-    isForeign,
+    // isForeign,
     effectiveDocType,
-    isAadhaar,
+    // isAadhaar,
     enteredGuestCount,
     shortBy,
     guestUploadsMissing,

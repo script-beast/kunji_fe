@@ -27,7 +27,7 @@ const TONE_STATE: Record<RailStepTone, string> = {
  */
 export function StepRail({ steps }: { steps: RailStep[] }) {
   return (
-    <nav aria-label="Check-in steps" className="border-r-2 border-ink/40 py-5">
+    <nav aria-label="Check-in steps" className="h-full border-r-2 border-ink/40 py-5">
       <div className="px-4.5 pb-3 text-[11px] tracking-widest uppercase text-ink/65 lg:px-5">
         Five steps · about 3 minutes
       </div>

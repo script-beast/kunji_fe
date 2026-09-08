@@ -23,7 +23,6 @@ export function GuestCard({
   onSelectFile,
   onReplace,
 }: GuestCardProps) {
-  const isAadhaar = guest.docType === "Aadhaar";
 
   return (
     <div className="grid gap-3 border border-ink/40 bg-panel p-3.5">
@@ -55,31 +54,14 @@ export function GuestCard({
         >
           {DOC_TYPES.map((d) => (
             <option key={d} value={d}>
-              {d === "Aadhaar" ? "Aadhaar – last 4 digits only" : d}
+              {d}
             </option>
           ))}
         </Select>
       </Field>
 
-      <Field label={isAadhaar ? "Last 4 digits of Aadhaar" : `${guest.docType} number`}>
-        <Input
-          value={guest.docNumber}
-          maxLength={isAadhaar ? 4 : 40}
-          inputMode={isAadhaar ? "numeric" : "text"}
-          onChange={(e) => onUpdate({ docNumber: e.target.value })}
-          placeholder={isAadhaar ? "1234" : "As printed on the document"}
-        />
-      </Field>
-
-      {isAadhaar && (
-        <p className="m-0 border-2 border-ink p-2.5 text-xs">
-          Cover or blur everything except the last 4 digits before photographing their Aadhaar. A
-          masked copy is required.
-        </p>
-      )}
-
       <UploadField
-        label={isAadhaar ? "Masked Aadhaar photo" : `${guest.docType} photo`}
+        label={`${guest.docType} photo`}
         upload={guest.upload}
         onSelectFile={onSelectFile}
         onReplace={onReplace}

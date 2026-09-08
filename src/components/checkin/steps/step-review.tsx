@@ -19,8 +19,8 @@ interface StepReviewProps {
   arrival: ArrivalWindow;
   primary: PrimaryGuest;
   coGuests: CoGuest[];
-  isForeign: boolean;
-  isAadhaar: boolean;
+  // isForeign: boolean;
+  // isAadhaar: boolean;
   effectiveDocType: DocType;
   consent: boolean;
   onConsentChange: (checked: boolean) => void;
@@ -32,8 +32,8 @@ export function StepReview({
   primary,
   coGuests,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- kept for when Form C is re-enabled
-  isForeign,
-  isAadhaar,
+  // isForeign,
+  // isAadhaar,
   effectiveDocType,
   consent,
   onConsentChange,
@@ -41,14 +41,12 @@ export function StepReview({
 }: StepReviewProps) {
   const idRows: ReviewRow[] = [
     { k: "Type", v: effectiveDocType },
-    { k: "Number", v: primary.docNumber || (isAadhaar ? "—" : "Not entered") },
+    { k: "Number", v: primary.docNumber || "Not entered" },
     {
       k: "Photo",
       v:
         primary.upload.status === "done"
-          ? isAadhaar
-            ? "Attached · masked"
-            : "Attached"
+          ? "Attached"
           : "Not attached",
     },
   ];
@@ -132,11 +130,11 @@ export function StepReview({
             Names, dates of birth, ID type and number, one photo of each ID, your phone and
             email.
           </InfoRow>
-          <InfoRow label="Why">
+          {/* <InfoRow label="Why">
             The guest register {HOST.name} must keep, and the Form C filing for foreign guests.
-          </InfoRow>
+          </InfoRow> */}
           <InfoRow label="Kept">
-            12 months from check-out, then deleted. ID photos are never shared with anyone else.
+            3 months from check-out, then deleted. ID photos are never shared with anyone else.
           </InfoRow>
           <InfoRow label="Contact">
             {HOST.name} on WhatsApp, or privacy@kunji.in to ask for deletion after 12 months.

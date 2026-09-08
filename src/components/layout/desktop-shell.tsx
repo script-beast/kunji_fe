@@ -37,7 +37,7 @@ export function DesktopShell({ stepCounter, rail, aside, footer, children }: Des
           )}
         </main>
 
-        {aside && <div className="hidden lg:block">{aside}</div>}
+        {aside && <div className="hidden h-full lg:block">{aside}</div>}
       </div>
     </div>
   );

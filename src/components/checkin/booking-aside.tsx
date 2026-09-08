@@ -17,7 +17,7 @@ export function BookingAside({ dates, guests }: BookingAsideProps = {}) {
   ];
 
   return (
-    <aside className="border-l-2 border-ink/40 px-6 pt-6">
+    <aside className="h-full border-l-2 border-ink/40 px-6 pt-6">
       <div className="border-b-2 border-ink/40 pb-2 text-[11px] tracking-widest uppercase text-ink/65">
         This booking
       </div>
@@ -33,11 +33,10 @@ export function BookingAside({ dates, guests }: BookingAsideProps = {}) {
       </div>
       <p className="mt-2.5 text-[12.5px] leading-relaxed text-pretty">
         Section 8 of the Haryana guest-house rules requires the host to keep a register of every
-        person staying, with one photo ID each. Foreign passports also need a Form C filing
-        within 24 hours.
+        person staying, with one photo ID each.
       </p>
       <p className="mt-2.5 text-[12.5px] leading-relaxed">
-        IDs are kept 12 months from check-out, then deleted. Nothing is shared with anyone else.
+        IDs are kept 3 months from check-out, then deleted. Nothing is shared with anyone else.
       </p>
 
       <div className="mt-6 border-b-2 border-ink/40 pb-2 text-[11px] tracking-widest uppercase text-ink/65">

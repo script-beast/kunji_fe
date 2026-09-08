@@ -15,8 +15,8 @@ import type { DocType, PrimaryGuest } from "@/lib/types";
 interface StepIdProps {
   primary: PrimaryGuest;
   onUpdate: (patch: Partial<PrimaryGuest>) => void;
-  isForeign: boolean;
-  isAadhaar: boolean;
+  // isForeign: boolean;
+  // isAadhaar: boolean;
   effectiveDocType: DocType;
   onSelectFile: (file: File) => void;
   onReplace: () => void;
@@ -25,8 +25,8 @@ interface StepIdProps {
 export function StepId({
   primary,
   onUpdate,
-  isForeign,
-  isAadhaar,
+  // isForeign,
+  // isAadhaar,
   effectiveDocType,
   onSelectFile,
   onReplace,
@@ -36,7 +36,9 @@ export function StepId({
   return (
     <div className="grid gap-4 px-4 pt-4.5 pb-6 sm:px-0 sm:py-0">
       <div>
-        <h3 className="mb-1.5 text-2xl sm:text-[28px] lg:text-[30px]">Your ID</h3>
+        <h3 className="mb-1.5 text-2xl sm:text-[28px] lg:text-[30px]">
+          Your ID
+        </h3>
         <p className="m-0 text-[13px] text-neutral-700 sm:text-sm">
           One government ID per guest. Yours first.
         </p>
@@ -61,17 +63,7 @@ export function StepId({
         <div className="mb-2 text-[11px] tracking-widest uppercase text-ink/65">
           Document type
         </div>
-        {isForeign ? (
-          <div className="flex items-center gap-2.5 border border-ink/40 bg-panel px-3 py-2.5">
-            <IconLock width={15} height={15} />
-            <div>
-              <div className="text-sm font-semibold">Passport</div>
-              <div className="text-xs text-neutral-700">
-                The only ID accepted for foreign guests.
-              </div>
-            </div>
-          </div>
-        ) : (
+        {
           <div
             role="radiogroup"
             aria-label="Document type"
@@ -81,68 +73,30 @@ export function StepId({
               <RadioOption
                 key={d}
                 name="doc-type"
-                label={d === "Aadhaar" ? "Aadhaar – last 4 digits only" : d}
+                label={d}
                 checked={primary.docType === d}
                 onSelect={() => onUpdate({ docType: d })}
               />
             ))}
           </div>
-        )}
+        }
       </div>
 
-      <Field
-        className="lg:max-w-85"
-        label={isAadhaar ? "Last 4 digits of your Aadhaar" : `${effectiveDocType} number`}
-        htmlFor="docNumber"
-        hint={
-          isAadhaar
-            ? "Four digits only. The rest of the number is never asked for."
-            : "Letters and numbers, no spaces needed."
-        }
-      >
-        <Input
-          id="docNumber"
-          value={primary.docNumber}
-          maxLength={isAadhaar ? 4 : 40}
-          inputMode={isAadhaar ? "numeric" : "text"}
-          className={isAadhaar ? "w-28 tracking-[0.3em]" : undefined}
-          onChange={(e) => onUpdate({ docNumber: e.target.value })}
-          placeholder={isAadhaar ? "1234" : "As printed on the document"}
-        />
-      </Field>
-
-      {isAadhaar && (
-        <div className="border-2 border-ink p-3.5">
-          <div className="mb-1.5 flex items-center gap-2">
-            <IconShield width={16} height={16} />
-            <div className="font-heading text-sm font-extrabold">Mask the first 8 digits</div>
-          </div>
-          <p className="m-0 text-sm text-pretty">
-            A copy of your Aadhaar is required, so cover or blur everything except the last 4
-            digits before you photograph it — a masked Aadhaar is what the register needs, and
-            it is what {hostFirstName} keeps.
-          </p>
-        </div>
-      )}
-
       <UploadField
-        label={
-          isAadhaar
-            ? "Photo of your masked Aadhaar — required"
-            : effectiveDocType === "Passport"
-              ? "Photo of your passport page — required"
-              : `Photo of your ${effectiveDocType.toLowerCase()} — required`
-        }
+        label={`Photo of your ${effectiveDocType.toLowerCase()} — required`}
         upload={primary.upload}
         onSelectFile={onSelectFile}
         onReplace={onReplace}
       />
       <p className="m-0 flex gap-2 border-t-2 border-ink/40 pt-2.5 text-xs leading-normal">
-        <strong className="whitespace-nowrap">Kept 12 months, then deleted.</strong>
-        <span>
-          Used only for the guest register {hostFirstName} must keep by law, and shown to the
-          police only if they ask. Never sent to anyone else, never used for marketing.
-        </span>
+        <strong className="whitespace-nowrap">
+          Kept 3 months, then deleted.
+        </strong>
+        {/* <span>
+          Used only for the guest register {hostFirstName} must keep by law, and
+          shown to the police only if they ask. Never sent to anyone else, never
+          used for marketing.
+        </span> */}
       </p>
 
       {/* Form C (foreign nationals) — disabled on the frontend for now.

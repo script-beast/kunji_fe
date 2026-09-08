@@ -42,26 +42,31 @@ export function StepAbout({ primary, onUpdate, onOpenNationalityPicker }: StepAb
         </Field>
 
         <Field label="Phone number" htmlFor="phone">
-          <div className="flex gap-2">
-            <Select
-              className="w-24 flex-none"
-              aria-label="Country code"
-              value={primary.countryCode}
-              onChange={(e) => onUpdate({ countryCode: e.target.value })}
-            >
-              {COUNTRY_CODES.map((code) => (
-                <option key={code} value={code}>
-                  {code}
-                </option>
-              ))}
-            </Select>
+          <div className="flex gap-1">
+            <div className="w-20 flex-none">
+              <Select
+                className="w-full"
+                aria-label="Country code"
+                value={primary.countryCode}
+                onChange={(e) => onUpdate({ countryCode: e.target.value })}
+              >
+                {COUNTRY_CODES.map((code) => (
+                  <option key={code} value={code}>
+                    {code}
+                  </option>
+                ))}
+              </Select>
+            </div>
             <Input
               id="phone"
               type="tel"
               inputMode="numeric"
+              maxLength={10}
               autoComplete="tel"
               value={primary.phone}
-              onChange={(e) => onUpdate({ phone: e.target.value })}
+              onChange={(e) =>
+                onUpdate({ phone: e.target.value.replace(/\D/g, "").slice(0, 10) })
+              }
               placeholder="98765 43210"
             />
           </div>
@@ -81,7 +86,6 @@ export function StepAbout({ primary, onUpdate, onOpenNationalityPicker }: StepAb
         <Field
           label="Nationality"
           htmlFor="nationality"
-          hint="Change this if you hold a non-Indian passport — the next step then asks for your visa, which the law requires."
         >
           <button
             type="button"

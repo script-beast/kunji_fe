@@ -9,9 +9,10 @@ import { COUNTRIES } from "@/lib/constants";
 interface NationalityPickerProps {
   onPick: (country: string) => void;
   onClose: () => void;
+  className?: string;
 }
 
-export function NationalityPicker({ onPick, onClose }: NationalityPickerProps) {
+export function NationalityPicker({ onPick, onClose, className }: NationalityPickerProps) {
   const [query, setQuery] = useState("");
 
   const results = useMemo(
@@ -21,7 +22,7 @@ export function NationalityPicker({ onPick, onClose }: NationalityPickerProps) {
   );
 
   return (
-    <div className="absolute inset-0 flex flex-col bg-paper">
+    <div className={`absolute inset-0 flex flex-col bg-paper ${className || ""}`}>
       <div className="flex flex-none items-center gap-2.5 border-b-2 border-ink/40 px-4 py-3">
         <Button variant="ghost" className="p-1" onClick={onClose} aria-label="Back">
           <IconArrowLeft width={18} height={18} />

@@ -46,8 +46,8 @@ function StepContent({ wizard }: { wizard: WizardState }) {
         <StepId
           primary={wizard.primary}
           onUpdate={wizard.updatePrimary}
-          isForeign={wizard.isForeign}
-          isAadhaar={wizard.isAadhaar}
+          // isForeign={wizard.isForeign}
+          // isAadhaar={wizard.isAadhaar}
           effectiveDocType={wizard.effectiveDocType}
           onSelectFile={wizard.selectPrimaryFile}
           onReplace={wizard.resetPrimaryUpload}
@@ -75,8 +75,8 @@ function StepContent({ wizard }: { wizard: WizardState }) {
           arrival={wizard.arrival}
           primary={wizard.primary}
           coGuests={wizard.coGuests}
-          isForeign={wizard.isForeign}
-          isAadhaar={wizard.isAadhaar}
+          // isForeign={wizard.isForeign}
+          // isAadhaar={wizard.isAadhaar}
           effectiveDocType={wizard.effectiveDocType}
           consent={wizard.consent}
           onConsentChange={wizard.setConsent}
@@ -237,7 +237,13 @@ export function CheckinWizard({ formToken, booking, objectionReason }: CheckinWi
           <StepContent wizard={wizard} />
         </DesktopShell>
         {wizard.natPickerOpen && (
-          <div className="fixed inset-0 z-50">{natPicker}</div>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/25 p-4">
+            <NationalityPicker
+              onPick={wizard.setNationality}
+              onClose={wizard.closeNationalityPicker}
+              className="relative inset-auto h-[min(70vh,600px)] w-full max-w-md border-2 border-ink/40 shadow-xl"
+            />
+          </div>
         )}
       </div>
     </>
