@@ -1,5 +1,3 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { Tag } from "@/components/ui/tag";
 import { HOST } from "@/lib/constants";
 import { maskPhone } from "@/lib/utils";
@@ -42,11 +40,6 @@ export function SubmittedScreen({ reference }: SubmittedScreenProps = {}) {
         Your booking — door code, Wi-Fi and who to call.
       </p>
 
-      <Link href="/booking" className="sm:w-fit">
-        <Button variant="secondary" block className="min-h-11.5">
-          Preview Your booking
-        </Button>
-      </Link>
     </div>
   );
 }

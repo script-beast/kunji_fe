@@ -74,6 +74,7 @@ export default function GuestFormPage() {
             gateCode={data.gateCode}
             bookingReference={data.booking?.bookingMyId}
             booking={data.booking}
+            room={data.room}
           />
         </StatusShell>
       </main>
@@ -95,6 +96,7 @@ export default function GuestFormPage() {
       <CheckinWizard
         formToken={formToken}
         booking={data.booking}
+        room={data.room}
         objectionReason={data.objectionReason}
       />
     </main>

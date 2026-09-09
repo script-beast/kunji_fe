@@ -31,9 +31,9 @@ export const BOOKING = {
 };
 
 export const ACCESS = {
-  doorCode: "4729",
-  wifiName: "Aralias_1102_5G",
-  wifiPassword: "peacock-lane-88",
+  doorCode: "0000",
+  wifiName: "--",
+  wifiPassword: "--",
 };
 
 export const STEP_NAMES = [

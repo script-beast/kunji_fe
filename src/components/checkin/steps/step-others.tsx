@@ -9,6 +9,8 @@ interface StepOthersProps {
   enteredCount: number;
   shortBy: number;
   guestUploadsMissing: number;
+  incompleteGuests: number;
+  extraGuestCount: number;
   canAddGuest: boolean;
   onAddGuest: () => void;
   onUpdateGuest: (id: string, patch: Partial<CoGuest>) => void;
@@ -23,6 +25,8 @@ export function StepOthers({
   enteredCount,
   shortBy,
   guestUploadsMissing,
+  incompleteGuests,
+  extraGuestCount,
   canAddGuest,
   onAddGuest,
   onUpdateGuest,
@@ -32,14 +36,16 @@ export function StepOthers({
 }: StepOthersProps) {
   const countHeadline =
     shortBy === 0
-      ? `All ${maxGuests} guests on the register`
-      : `${enteredCount} of ${maxGuests} guests added`;
+      ? `${enteredCount} guest${enteredCount === 1 ? "" : "s"} on the register`
+      : `${enteredCount} of ${maxGuests} mandatory guests added`;
 
   const countHint =
     shortBy === 0
-      ? guestUploadsMissing > 0
-        ? `Names match the booking. ${guestUploadsMissing} ID photo${guestUploadsMissing === 1 ? " is" : "s are"} still missing — every guest needs one.`
-        : "Matches the booking. You can still edit anyone before you submit."
+      ? incompleteGuests > 0
+        ? `${incompleteGuests} guest${incompleteGuests === 1 ? "" : "s"} still need${incompleteGuests === 1 ? "s" : ""} a name, date of birth, or ID photo.`
+        : extraGuestCount > 0
+          ? `${extraGuestCount} additional guest${extraGuestCount === 1 ? "" : "s"} added. You can still edit anyone before you submit.`
+          : "All mandatory guests are complete. You can still add or edit guests before you submit."
       : `${shortBy} more ${shortBy === 1 ? "person" : "people"} to add — you, plus ${maxGuests - 1} others. The register has to match the booking before it can go to the host.`;
 
   return (
@@ -65,17 +71,16 @@ export function StepOthers({
             {countHint}
           </div>
         </div>
-        <div className="flex gap-[3px] sm:w-45 sm:flex-none">
-          {Array.from({ length: maxGuests }, (_, i) => (
-            <div
-              key={i}
-              className={`h-2.5 flex-1 sm:h-3 ${i < enteredCount ? "bg-accent" : "bg-neutral-400"}`}
-            />
-          ))}
+        <div className="flex h-3 flex-1 gap-[3px] bg-neutral-300 sm:w-45 sm:flex-none">
+          <div
+            className="h-3 bg-green-600 transition-[width]"
+            style={{ width: `${Math.min(100, (enteredCount / maxGuests) * 100)}%` }}
+          />
+          {extraGuestCount > 0 && <div className="h-3 min-w-1 flex-1 bg-red-500" />}
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
+      <div className="grid gap-4 lg:grid-cols-1 lg:items-start">
         {guests.map((guest, index) => (
           <GuestCard
             key={guest.id}

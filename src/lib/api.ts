@@ -38,6 +38,13 @@ export interface GuestRoom {
   _id: string;
   name: string;
   location: string;
+  address?: string;
+  wifiName?: string;
+  wifiPassword?: string;
+  hostName?: string;
+  hostPhone?: string;
+  caretakerName?: string;
+  caretakerPhone?: string;
 }
 
 export interface GuestFormResponse {

@@ -1,19 +1,22 @@
 import { HOST, PROPERTY } from "@/lib/constants";
+import type { GuestRoom } from "@/lib/api";
 
 interface BookingAsideProps {
   dates?: string;
   guests?: number;
+  room?: GuestRoom;
 }
 
 /** Persistent context panel shown alongside the form on wide screens only. */
-export function BookingAside({ dates, guests }: BookingAsideProps = {}) {
-  const hostFirstName = HOST.name.split(" ")[0];
+export function BookingAside({ dates, guests, room }: BookingAsideProps = {}) {
+  const hostName = room?.hostName || HOST.name;
+  const hostPhone = room?.hostPhone || HOST.phone;
 
   const facts: [string, string][] = [
-    ["Flat", PROPERTY.name],
+    ["Flat", room?.name || PROPERTY.name],
     ["Dates", dates || "Not set"],
     ["Guests", guests ? `${guests} guests` : "Not set"],
-    ["Host", HOST.name],
+    ["Host", hostName],
   ];
 
   return (
@@ -43,7 +46,7 @@ export function BookingAside({ dates, guests }: BookingAsideProps = {}) {
         Stuck?
       </div>
       <p className="mt-2.5 text-[12.5px]">
-        Message {hostFirstName} on WhatsApp at {HOST.phone}. She answers within the hour.
+        Message {hostName.split(" ")[0]} on WhatsApp at {hostPhone}. They answer within the hour.
       </p>
     </aside>
   );

@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { ARRIVAL_WINDOWS, COUNTRY_CODES, PORTS_OF_ENTRY, VISA_TYPES } from "@/lib/constants";
 import { getErrorMessage, saveGuestForm, submitGuestForm, uploadGuestDocument } from "@/lib/api";
-import type { GuestBooking, GuestCoGuestDetail } from "@/lib/api";
+import type { GuestBooking, GuestCoGuestDetail, GuestRoom } from "@/lib/api";
 import type { ArrivalWindow, CoGuest, DocType, PrimaryGuest, Upload, WizardStep } from "@/lib/types";
 
 const EMPTY_UPLOAD: Upload = { status: "empty", pct: 0 };
@@ -19,11 +19,15 @@ function uploadFromDocumentFile(documentFile?: GuestCoGuestDetail["documentFile"
     : { ...EMPTY_UPLOAD };
 }
 
-let guestSeq = 1;
-function makeCoGuest(): CoGuest {
+let guestSeq = 0;
+function makeGuestId() {
   guestSeq += 1;
+  return `guest-new-${Date.now()}-${guestSeq}`;
+}
+
+function makeCoGuest(): CoGuest {
   return {
-    id: `guest-${guestSeq}`,
+    id: makeGuestId(),
     name: "",
     dob: "",
     docType: "Passport",
@@ -32,10 +36,9 @@ function makeCoGuest(): CoGuest {
   };
 }
 
-function makeCoGuestFromDetail(detail: GuestCoGuestDetail): CoGuest {
-  guestSeq += 1;
+function makeCoGuestFromDetail(detail: GuestCoGuestDetail, index: number): CoGuest {
   return {
-    id: `guest-${guestSeq}`,
+    id: `guest-${detail._id}-${index}`,
     name: detail.name || "",
     dob: detail.dob ? detail.dob.slice(0, 10) : "",
     docType: (detail.documentType as DocType) || "Passport",
@@ -74,6 +77,7 @@ function makePrimaryGuest(initial?: GuestBooking): PrimaryGuest {
 interface UseCheckinWizardOptions {
   formToken: string;
   booking?: GuestBooking;
+  room?: GuestRoom;
 }
 
 /**
@@ -81,7 +85,7 @@ interface UseCheckinWizardOptions {
  * upload (proxied through the token-scoped public API), and the per-step
  * validation that gates the footer button.
  */
-export function useCheckinWizard({ formToken, booking }: UseCheckinWizardOptions) {
+export function useCheckinWizard({ formToken, booking, room }: UseCheckinWizardOptions) {
   const maxGuests = booking?.noOfGuests || 1;
   const initialArrival = ARRIVAL_WINDOWS.find((window) => window === booking?.expectedCheckInTime)
     ?? ARRIVAL_WINDOWS[2];
@@ -139,7 +143,7 @@ export function useCheckinWizard({ formToken, booking }: UseCheckinWizardOptions
   }, []);
 
   const addGuest = useCallback(() => {
-    setCoGuests((prev) => (prev.length < maxGuests - 1 ? [...prev, makeCoGuest()] : prev));
+    setCoGuests((prev) => [...prev, makeCoGuest()]);
   }, [maxGuests]);
 
   const removeGuest = useCallback((id: string) => {
@@ -173,10 +177,16 @@ export function useCheckinWizard({ formToken, booking }: UseCheckinWizardOptions
   // const isAadhaar = effectiveDocType === "Aadhaar";
 
   const enteredGuestCount = 1 + coGuests.filter((g) => g.name.trim().length > 0).length;
+  const addedGuests = coGuests.filter((guest) => guest.name.trim().length > 0);
   const shortBy = Math.max(0, maxGuests - enteredGuestCount);
-  const guestUploadsMissing = coGuests.filter(
-    (guest) => guest.name.trim().length > 0 && guest.upload.status !== "done",
+  const incompleteGuests = addedGuests.filter(
+    (guest) =>
+      !guest.dob ||
+      !guest.name.trim() ||
+      guest.upload.status !== "done",
   ).length;
+  const guestUploadsMissing = addedGuests.filter((guest) => guest.upload.status !== "done").length;
+  const extraGuestCount = Math.max(0, enteredGuestCount - maxGuests);
   const validEmail = !primary.email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(primary.email);
   const validPhone = !primary.phone || /^\d{10}$/.test(primary.phone);
   const aboutStepValid =
@@ -187,7 +197,7 @@ export function useCheckinWizard({ formToken, booking }: UseCheckinWizardOptions
       case 3:
         return aboutStepValid && primary.upload.status === "done";
       case 4:
-        return shortBy === 0 && guestUploadsMissing === 0;
+        return shortBy === 0 && incompleteGuests === 0;
       case 5:
         return consent && !submitting && !saving;
       default:
@@ -268,6 +278,7 @@ export function useCheckinWizard({ formToken, booking }: UseCheckinWizardOptions
     saving,
     submitError,
     booking,
+    room,
     maxGuests,
     arrival,
     setArrival,
@@ -301,7 +312,9 @@ export function useCheckinWizard({ formToken, booking }: UseCheckinWizardOptions
     shortBy,
     guestUploadsMissing,
     canContinue,
-    canAddGuest: coGuests.length < maxGuests - 1,
+    canAddGuest: true,
+    incompleteGuests,
+    extraGuestCount,
   };
 }
 

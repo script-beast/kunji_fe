@@ -17,7 +17,7 @@ import { StepReview } from "@/components/checkin/steps/step-review";
 import { SubmittedScreen } from "@/components/checkin/screens/submitted-screen";
 import { useCheckinWizard, type CheckinWizard as WizardState } from "@/hooks/use-checkin-wizard";
 import { HOST, PROPERTY, STEP_NAMES } from "@/lib/constants";
-import type { GuestBooking } from "@/lib/api";
+import type { GuestBooking, GuestRoom } from "@/lib/api";
 import { formatDateRange } from "@/lib/utils";
 import type { WizardStep } from "@/lib/types";
 
@@ -29,6 +29,7 @@ function StepContent({ wizard }: { wizard: WizardState }) {
       return (
         <StepStay
           booking={wizard.booking}
+          room={wizard.room}
           arrival={wizard.arrival}
           onArrivalChange={wizard.setArrival}
         />
@@ -61,6 +62,8 @@ function StepContent({ wizard }: { wizard: WizardState }) {
           enteredCount={wizard.enteredGuestCount}
           shortBy={wizard.shortBy}
           guestUploadsMissing={wizard.guestUploadsMissing}
+          incompleteGuests={wizard.incompleteGuests}
+          extraGuestCount={wizard.extraGuestCount}
           canAddGuest={wizard.canAddGuest}
           onAddGuest={wizard.addGuest}
           onUpdateGuest={wizard.updateGuest}
@@ -75,6 +78,8 @@ function StepContent({ wizard }: { wizard: WizardState }) {
           arrival={wizard.arrival}
           primary={wizard.primary}
           coGuests={wizard.coGuests}
+          room={wizard.room}
+          booking={wizard.booking}
           // isForeign={wizard.isForeign}
           // isAadhaar={wizard.isAadhaar}
           effectiveDocType={wizard.effectiveDocType}
@@ -141,11 +146,12 @@ function buildRailSteps(wizard: WizardState): RailStep[] {
 interface CheckinWizardProps {
   formToken: string;
   booking?: GuestBooking;
+  room?: GuestRoom;
   objectionReason?: string;
 }
 
-export function CheckinWizard({ formToken, booking, objectionReason }: CheckinWizardProps) {
-  const wizard = useCheckinWizard({ formToken, booking });
+export function CheckinWizard({ formToken, booking, room, objectionReason }: CheckinWizardProps) {
+  const wizard = useCheckinWizard({ formToken, booking, room });
   const natPicker: ReactNode = wizard.natPickerOpen ? (
     <NationalityPicker onPick={wizard.setNationality} onClose={wizard.closeNationalityPicker} />
   ) : null;
@@ -170,7 +176,8 @@ export function CheckinWizard({ formToken, booking, objectionReason }: CheckinWi
           <DesktopShell
             stepCounter={booking?.bookingMyId ? `Reference ${booking.bookingMyId}` : "Submitted"}
             rail={<StepRail steps={doneRail} />}
-            aside={<BookingAside dates={dateRange} guests={wizard.maxGuests} />}
+            aside={<BookingAside dates={dateRange} guests={wizard.maxGuests} room={wizard.room} />}
+            room={wizard.room}
           >
             <SubmittedScreen reference={booking?.bookingMyId} />
           </DesktopShell>
@@ -205,7 +212,7 @@ export function CheckinWizard({ formToken, booking, objectionReason }: CheckinWi
                   KUNJI
                 </div>
                 <div className="text-right text-[11px] text-neutral-700">
-                  {PROPERTY.name}
+                  {wizard.room?.name || PROPERTY.name}
                   {dateRange ? ` · ${dateRange}` : ""}
                 </div>
               </div>
@@ -229,7 +236,8 @@ export function CheckinWizard({ formToken, booking, objectionReason }: CheckinWi
         <DesktopShell
           stepCounter={`Step ${wizard.step} of ${TOTAL_STEPS} · ${STEP_NAMES[stepIndex]}`}
           rail={<StepRail steps={buildRailSteps(wizard)} />}
-          aside={<BookingAside dates={dateRange} guests={wizard.maxGuests} />}
+          aside={<BookingAside dates={dateRange} guests={wizard.maxGuests} room={wizard.room} />}
+          room={wizard.room}
           footer={<FooterButtons wizard={wizard} />}
         >
           {objectionBanner}

@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils";
+
 interface RadioOptionProps {
   name: string;
   label: string;
@@ -15,7 +17,13 @@ export function RadioOption({ name, label, checked, onSelect }: RadioOptionProps
         onChange={onSelect}
         className="sr-only peer"
       />
-      <span className="size-4 shrink-0 rounded-full border-[1.5px] border-ink/40 peer-checked:border-accent peer-checked:bg-accent peer-checked:shadow-[inset_0_0_0_3px_var(--color-panel)] peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-accent peer-focus-visible:outline-offset-2" />
+      <span
+        className={cn(
+          "size-4 shrink-0 rounded-full border-[1.5px] border-ink/40",
+          checked &&
+            "border-accent bg-accent shadow-[inset_0_0_0_3px_var(--color-panel)]",
+        )}
+      />
       {label}
     </label>
   );

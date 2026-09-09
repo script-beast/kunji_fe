@@ -6,18 +6,25 @@ import { Tag } from "@/components/ui/tag";
 import { IconCopy } from "@/components/ui/icons";
 import { ContactCard } from "@/components/booking/contact-card";
 import { ACCESS, CARETAKER, HOST, PROPERTY } from "@/lib/constants";
-import type { GuestBooking } from "@/lib/api";
+import type { GuestBooking, GuestRoom } from "@/lib/api";
 import { formatShortDate } from "@/lib/utils";
 
 interface BookingScreenProps {
   gateCode?: string;
   bookingReference?: string;
   booking?: GuestBooking;
+  room?: GuestRoom;
 }
 
-export function BookingScreen({ gateCode, bookingReference, booking }: BookingScreenProps = {}) {
+export function BookingScreen({ gateCode, bookingReference, booking, room }: BookingScreenProps = {}) {
   const [copied, setCopied] = useState<"code" | "wifi" | null>(null);
-  const hostFirstName = HOST.name.split(" ")[0];
+  const hostName = room?.hostName || HOST.name;
+  const hostPhone = room?.hostPhone || HOST.phone;
+  const caretakerName = room?.caretakerName || CARETAKER.name;
+  const caretakerPhone = room?.caretakerPhone || CARETAKER.phone;
+  const wifiName = room?.wifiName || ACCESS.wifiName;
+  const wifiPassword = room?.wifiPassword || ACCESS.wifiPassword;
+  const hostFirstName = hostName.split(" ")[0];
   const doorCode = gateCode || ACCESS.doorCode;
 
   const copy = (which: "code" | "wifi", text: string) => {
@@ -35,7 +42,7 @@ export function BookingScreen({ gateCode, bookingReference, booking }: BookingSc
       "Guests",
       booking?.noOfGuests ? `${booking.noOfGuests} guests · register accepted` : "Register accepted",
     ],
-    ["Flat", PROPERTY.flatLine],
+    ["Flat", room?.address || room?.location || PROPERTY.flatLine],
   ];
 
   return (
@@ -47,7 +54,7 @@ export function BookingScreen({ gateCode, bookingReference, booking }: BookingSc
         </div>
         <h3 className="mb-1 text-[26px] sm:text-[32px]">Your booking</h3>
         <p className="m-0 text-[13px] text-neutral-700 sm:text-sm">
-          {PROPERTY.name} · {PROPERTY.addressLine}
+          {room?.name || PROPERTY.name} · {room?.location || PROPERTY.addressLine}
         </p>
       </div>
 
@@ -81,15 +88,15 @@ export function BookingScreen({ gateCode, bookingReference, booking }: BookingSc
           </div>
           <div className="flex justify-between gap-3 border-b border-ink/40 py-2.5">
             <span className="text-xs text-neutral-700">Network</span>
-            <span className="text-[13px]">{ACCESS.wifiName}</span>
+            <span className="text-[13px]">{wifiName}</span>
           </div>
           <div className="flex items-center justify-between gap-3 border-b border-ink/40 py-2.5">
             <span className="text-xs text-neutral-700">Password</span>
             <span className="flex items-center gap-2.5">
-              <span className="text-sm tracking-wide">{ACCESS.wifiPassword}</span>
+              <span className="text-sm tracking-wide">{wifiPassword}</span>
               <button
                 type="button"
-                onClick={() => copy("wifi", ACCESS.wifiPassword)}
+                onClick={() => copy("wifi", wifiPassword)}
                 className="cursor-pointer border-0 bg-transparent p-0 font-heading text-xs font-extrabold text-accent hover:bg-accent/10"
               >
                 {copied === "wifi" ? "Copied" : "Copy"}
@@ -120,26 +127,26 @@ export function BookingScreen({ gateCode, bookingReference, booking }: BookingSc
             Who to call
           </div>
           <ContactCard
-            name={HOST.name}
+            name={hostName}
             role="Host · replies fastest on WhatsApp"
-            phone={HOST.phone}
+            phone={hostPhone}
             actionLabel="WhatsApp"
           />
           <ContactCard
-            name={CARETAKER.name}
+            name={caretakerName}
             role={CARETAKER.role}
-            phone={CARETAKER.phone}
+            phone={caretakerPhone}
             actionLabel="Call"
           />
           <p className="mt-2.5 text-[12.5px] text-pretty">
             Gate security will not let anyone up without the flat number. Say{" "}
-            <strong>1102, guest of {HOST.name}</strong>.
+            <strong>{room?.address || room?.location || PROPERTY.flatLine}, guest of {hostName}</strong>.
           </p>
         </div>
       </div>
 
       <p className="m-0 border-t-2 border-ink/40 pt-2.5 text-xs text-neutral-700">
-        Your ID copies are deleted 12 months after check-out. Nothing else on this page is
+        Your ID copies are deleted 3 months after check-out. Nothing else on this page is
         stored on your device.
       </p>
     </div>

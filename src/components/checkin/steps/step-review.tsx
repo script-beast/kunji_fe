@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { HOST } from "@/lib/constants";
 import type { ArrivalWindow, CoGuest, DocType, PrimaryGuest, WizardStep } from "@/lib/types";
+import type { GuestBooking, GuestRoom } from "@/lib/api";
+import { formatDateRange } from "@/lib/utils";
 
 interface ReviewRow {
   k: string;
@@ -13,12 +15,15 @@ interface ReviewSection {
   title: string;
   rows: ReviewRow[];
   step: WizardStep;
+  wide?: boolean;
 }
 
 interface StepReviewProps {
   arrival: ArrivalWindow;
   primary: PrimaryGuest;
   coGuests: CoGuest[];
+  room?: GuestRoom;
+  booking?: GuestBooking;
   // isForeign: boolean;
   // isAadhaar: boolean;
   effectiveDocType: DocType;
@@ -31,6 +36,8 @@ export function StepReview({
   arrival,
   primary,
   coGuests,
+  room,
+  booking,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- kept for when Form C is re-enabled
   // isForeign,
   // isAadhaar,
@@ -41,7 +48,7 @@ export function StepReview({
 }: StepReviewProps) {
   const idRows: ReviewRow[] = [
     { k: "Type", v: effectiveDocType },
-    { k: "Number", v: primary.docNumber || "Not entered" },
+    // { k: "Number", v: primary.docNumber || "Not entered" },
     {
       k: "Photo",
       v:
@@ -64,8 +71,11 @@ export function StepReview({
       title: "Your stay",
       step: 1,
       rows: [
-        { k: "Flat", v: "Aralias Green · 1BHK" },
-        { k: "Dates", v: "4–7 Sep 2026" },
+        { k: "Flat", v: room?.name || "Not set" },
+        {
+          k: "Dates",
+          v: formatDateRange(booking?.checkInDate, booking?.checkOutDate) || "Not set",
+        },
         { k: "Arriving", v: arrival },
       ],
     },
@@ -74,7 +84,7 @@ export function StepReview({
       step: 2,
       rows: [
         { k: "Name", v: primary.fullName || "Not entered" },
-        { k: "Born", v: primary.dob || "Not entered" },
+        { k: "DOB", v: primary.dob || "Not entered" },
         { k: "Phone", v: primary.phone ? `${primary.countryCode} ${primary.phone}` : "Not entered" },
         { k: "Email", v: primary.email || "Not entered" },
         { k: "Nationality", v: primary.nationality },
@@ -84,7 +94,8 @@ export function StepReview({
     {
       title: "Others staying",
       step: 4,
-      rows: coGuests.map((g) => ({ k: g.docType, v: g.name || "Unnamed" })),
+      rows: [],
+      wide: true,
     },
   ];
 
@@ -99,7 +110,7 @@ export function StepReview({
 
       <div className="grid gap-4.5 lg:grid-cols-2 lg:gap-6">
         {sections.map((section) => (
-          <div key={section.title}>
+          <div key={section.title} className={section.wide ? "lg:col-span-2" : "h-full"}>
             <div className="flex items-baseline justify-between border-b-2 border-ink/40 pb-1.5">
               <div className="text-[11px] tracking-widest uppercase text-ink/65">
                 {section.title}
@@ -108,15 +119,38 @@ export function StepReview({
                 Edit
               </Button>
             </div>
-            {section.rows.map((row, rowIndex) => (
-              <div
-                key={`${section.title}-${rowIndex}`}
-                className="flex justify-between gap-3 border-b border-ink/40 py-2"
-              >
-                <span className="text-xs text-neutral-700">{row.k}</span>
-                <span className="text-right text-[13px]">{row.v}</span>
+            {section.wide ? (
+              <div className="grid gap-4 pt-3 sm:grid-cols-2">
+                {coGuests.map((guest, index) => (
+                  <div key={guest.id} className="border border-ink/40 bg-panel">
+                    <div className="border-b border-ink/40 px-3 py-2 text-xs font-semibold">
+                      Guest {index + 2}
+                    </div>
+                    {[
+                      { k: "Name", v: guest.name || "Not entered" },
+                      { k: "DOB", v: guest.dob || "Not entered" },
+                      { k: "Document", v: guest.docType },
+                      { k: "Photo", v: guest.upload.status === "done" ? "Attached" : "Not attached" },
+                    ].map((row) => (
+                      <div key={row.k} className="flex justify-between gap-3 border-b border-ink/40 px-3 py-2 last:border-b-0">
+                        <span className="text-xs text-neutral-700">{row.k}</span>
+                        <span className="text-right text-[13px]">{row.v}</span>
+                      </div>
+                    ))}
+                  </div>
+                ))}
               </div>
-            ))}
+            ) : (
+              section.rows.map((row, rowIndex) => (
+                <div
+                  key={`${section.title}-${rowIndex}`}
+                  className="flex justify-between gap-3 border-b border-ink/40 py-2"
+                >
+                  <span className="text-xs text-neutral-700">{row.k}</span>
+                  <span className="text-right text-[13px]">{row.v}</span>
+                </div>
+              ))
+            )}
           </div>
         ))}
       </div>
@@ -125,7 +159,7 @@ export function StepReview({
         <div className="mb-2.5 font-heading text-base font-extrabold sm:text-[17px]">
           Before you submit
         </div>
-        <div className="grid gap-2.5 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-3">
+        <div className="grid gap-3">
           <InfoRow label="Collected">
             Names, dates of birth, ID type and number, one photo of each ID, your phone and
             email.
