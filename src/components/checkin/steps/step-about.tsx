@@ -1,9 +1,10 @@
 import { Field } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { DateInput, Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { IconSearch } from "@/components/ui/icons";
 import { COUNTRY_CODES } from "@/lib/constants";
 import type { PrimaryGuest } from "@/lib/types";
+import { todayDateInputValue } from "@/lib/utils";
 
 interface StepAboutProps {
   primary: PrimaryGuest;
@@ -33,9 +34,9 @@ export function StepAbout({ primary, onUpdate, onOpenNationalityPicker }: StepAb
         </Field>
 
         <Field label="Date of birth" htmlFor="dob">
-          <Input
+          <DateInput
             id="dob"
-            type="date"
+            max={todayDateInputValue()}
             value={primary.dob}
             onChange={(e) => onUpdate({ dob: e.target.value })}
           />

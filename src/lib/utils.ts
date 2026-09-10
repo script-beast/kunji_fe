@@ -45,3 +45,9 @@ export function formatTime(value?: string): string | undefined {
   if (Number.isNaN(date.getTime())) return undefined;
   return date.toLocaleTimeString("en-GB", { hour: "numeric", minute: "2-digit" }).toLowerCase();
 }
+
+export function todayDateInputValue(): string {
+  const date = new Date();
+  const offset = date.getTimezoneOffset();
+  return new Date(date.getTime() - offset * 60_000).toISOString().slice(0, 10);
+}

@@ -5,6 +5,7 @@ import { ARRIVAL_WINDOWS, COUNTRY_CODES, PORTS_OF_ENTRY, VISA_TYPES } from "@/li
 import { getErrorMessage, saveGuestForm, submitGuestForm, uploadGuestDocument } from "@/lib/api";
 import type { GuestBooking, GuestCoGuestDetail, GuestRoom } from "@/lib/api";
 import type { ArrivalWindow, CoGuest, DocType, PrimaryGuest, Upload, WizardStep } from "@/lib/types";
+import { todayDateInputValue } from "@/lib/utils";
 
 const EMPTY_UPLOAD: Upload = { status: "empty", pct: 0 };
 
@@ -182,6 +183,7 @@ export function useCheckinWizard({ formToken, booking, room }: UseCheckinWizardO
   const incompleteGuests = addedGuests.filter(
     (guest) =>
       !guest.dob ||
+      guest.dob > todayDateInputValue() ||
       !guest.name.trim() ||
       guest.upload.status !== "done",
   ).length;
@@ -190,7 +192,11 @@ export function useCheckinWizard({ formToken, booking, room }: UseCheckinWizardO
   const validEmail = !primary.email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(primary.email);
   const validPhone = !primary.phone || /^\d{10}$/.test(primary.phone);
   const aboutStepValid =
-    primary.fullName.trim().length > 0 && Boolean(primary.dob) && validEmail && validPhone;
+    primary.fullName.trim().length > 0 &&
+    Boolean(primary.dob) &&
+    primary.dob <= todayDateInputValue() &&
+    validEmail &&
+    validPhone;
 
   const canContinue = useMemo(() => {
     switch (step) {

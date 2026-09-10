@@ -1,5 +1,6 @@
 import { Field } from "@/components/ui/field";
 import { Select } from "@/components/ui/select";
+import { IconClock } from "@/components/ui/icons";
 import { ARRIVAL_WINDOWS, HOST, PROPERTY } from "@/lib/constants";
 import type { GuestBooking, GuestRoom } from "@/lib/api";
 import type { ArrivalWindow } from "@/lib/types";
@@ -59,17 +60,26 @@ export function StepStay({ booking, room, arrival, onArrivalChange }: StepStayPr
         htmlFor="arrival"
         className="mt-5 max-w-70 sm:mt-6"
       >
-        <Select
-          id="arrival"
-          value={arrival}
-          onChange={(e) => onArrivalChange(e.target.value as ArrivalWindow)}
-        >
-          {ARRIVAL_WINDOWS.map((w) => (
-            <option key={w} value={w}>
-              {w}
-            </option>
-          ))}
-        </Select>
+        <div className="relative">
+          <Select
+            id="arrival"
+            className="pl-9"
+            value={arrival}
+            onChange={(e) => onArrivalChange(e.target.value as ArrivalWindow)}
+          >
+            {ARRIVAL_WINDOWS.map((w) => (
+              <option key={w} value={w}>
+                {w}
+              </option>
+            ))}
+          </Select>
+          <IconClock
+            aria-hidden="true"
+            className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-ink/60"
+            width={15}
+            height={15}
+          />
+        </div>
       </Field>
       <p className="mt-2 text-xs text-neutral-700 sm:mt-2.5">
         Someone is at the gate until 10 pm. Later is fine — {hostFirstName} just needs to know.

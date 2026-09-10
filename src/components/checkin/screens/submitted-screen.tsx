@@ -1,16 +1,20 @@
 import { Tag } from "@/components/ui/tag";
 import { HOST } from "@/lib/constants";
 import { maskPhone } from "@/lib/utils";
+import type { GuestRoom } from "@/lib/api";
 
 interface SubmittedScreenProps {
   reference?: string;
+  room?: GuestRoom;
 }
 
-export function SubmittedScreen({ reference }: SubmittedScreenProps = {}) {
-  const hostFirstName = HOST.name.split(" ")[0];
+export function SubmittedScreen({ reference, room }: SubmittedScreenProps = {}) {
+  const hostName = room?.hostName || HOST.name;
+  const hostPhone = room?.hostPhone || HOST.phone;
+  const hostFirstName = hostName.split(" ")[0];
 
   const rows: [string, string][] = [
-    ["Door code", `On WhatsApp to ${maskPhone("98765 43210")}`],
+    ["Door code", `On WhatsApp to ${maskPhone(hostPhone)}`],
     ["Reference", reference || "—"],
     ["Submitted", new Date().toLocaleString()],
   ];

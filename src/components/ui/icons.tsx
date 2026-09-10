@@ -105,6 +105,15 @@ export function IconClock(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+export function IconCalendar(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base(props)}>
+      <rect x="3" y="4" width="18" height="17" rx="1" />
+      <path d="M16 2v4M8 2v4M3 9h18" />
+    </svg>
+  );
+}
+
 export function IconArchive(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...base(props)}>

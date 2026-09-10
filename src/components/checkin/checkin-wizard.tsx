@@ -169,7 +169,7 @@ export function CheckinWizard({ formToken, booking, room, objectionReason }: Che
       <>
         <div className="sm:hidden">
           <MobileShell>
-            <SubmittedScreen reference={booking?.bookingMyId} />
+            <SubmittedScreen reference={booking?.bookingMyId} room={wizard.room} />
           </MobileShell>
         </div>
         <div className="hidden sm:block">
@@ -179,7 +179,7 @@ export function CheckinWizard({ formToken, booking, room, objectionReason }: Che
             aside={<BookingAside dates={dateRange} guests={wizard.maxGuests} room={wizard.room} />}
             room={wizard.room}
           >
-            <SubmittedScreen reference={booking?.bookingMyId} />
+            <SubmittedScreen reference={booking?.bookingMyId} room={wizard.room} />
           </DesktopShell>
         </div>
       </>

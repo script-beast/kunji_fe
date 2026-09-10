@@ -56,6 +56,16 @@ body {
   line-height: 1.55;
 }
 
+.date-input::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  cursor: pointer;
+}
+
+.date-input {
+  color-scheme: light;
+  accent-color: var(--color-accent);
+}
+
 ::selection {
   background: color-mix(in srgb, var(--color-accent) 30%, transparent);
 }

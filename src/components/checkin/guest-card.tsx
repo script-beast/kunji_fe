@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { DateInput, Input } from "@/components/ui/input";
 import { UploadField } from "@/components/checkin/upload-field";
 import { DOC_TYPES } from "@/lib/constants";
 import type { CoGuest } from "@/lib/types";
 import { useState } from "react";
+import { todayDateInputValue } from "@/lib/utils";
 
 interface GuestCardProps {
   guest: CoGuest;
@@ -45,7 +46,11 @@ export function GuestCard({
       </Field>
 
       <Field label="Date of birth" className="min-w-0">
-        <Input type="date" value={guest.dob} onChange={(e) => onUpdate({ dob: e.target.value })} />
+        <DateInput
+          max={todayDateInputValue()}
+          value={guest.dob}
+          onChange={(e) => onUpdate({ dob: e.target.value })}
+        />
       </Field>
 
       <Field label="Document type" className="min-w-0">

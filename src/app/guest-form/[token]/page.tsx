@@ -85,7 +85,7 @@ export default function GuestFormPage() {
     return (
       <main className="flex flex-1 flex-col">
         <StatusShell>
-          <SubmittedScreen reference={data.booking?.bookingMyId} />
+          <SubmittedScreen reference={data.booking?.bookingMyId} room={data.room} />
         </StatusShell>
       </main>
     );
