@@ -22,6 +22,7 @@ export function BookingScreen({ gateCode, bookingReference, booking, room }: Boo
   const hostPhone = room?.hostPhone || HOST.phone;
   const caretakerName = room?.caretakerName || CARETAKER.name;
   const caretakerPhone = room?.caretakerPhone || CARETAKER.phone;
+  const whatsappPhone = hostPhone.replace(/\D/g, "");
   const wifiName = room?.wifiName || ACCESS.wifiName;
   const wifiPassword = room?.wifiPassword || ACCESS.wifiPassword;
   const hostFirstName = hostName.split(" ")[0];
@@ -131,12 +132,14 @@ export function BookingScreen({ gateCode, bookingReference, booking, room }: Boo
             role="Host · replies fastest on WhatsApp"
             phone={hostPhone}
             actionLabel="WhatsApp"
+            actionHref={`https://wa.me/${whatsappPhone}`}
           />
           <ContactCard
             name={caretakerName}
             role={CARETAKER.role}
             phone={caretakerPhone}
             actionLabel="Call"
+            actionHref={`tel:${caretakerPhone.replace(/[^\d+]/g, "")}`}
           />
           <p className="mt-2.5 text-[12.5px] text-pretty">
             Gate security will not let anyone up without the flat number. Say{" "}
