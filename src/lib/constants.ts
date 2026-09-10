@@ -9,12 +9,12 @@ export const PROPERTY = {
 };
 
 export const HOST = {
-  name: "Priya Sethi",
+  name: "Host",
   phone: "+91 98110 44231",
 };
 
 export const CARETAKER = {
-  name: "Ramesh Yadav",
+  name: "Caretaker",
   role: "Caretaker · on site until 10 pm",
   phone: "+91 99715 20884",
 };
