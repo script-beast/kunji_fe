@@ -90,7 +90,7 @@ export function StepId({
       />
       <p className="m-0 flex gap-2 border-t-2 border-ink/40 pt-2.5 text-xs leading-normal">
         <strong className="whitespace-nowrap">
-          Kept 3 months, then deleted.
+          Kept for 3 months, then deleted.
         </strong>
         {/* <span>
           Used only for the guest register {hostFirstName} must keep by law, and

@@ -171,7 +171,7 @@ export function StepReview({
             3 months from check-out, then deleted. ID photos are never shared with anyone else.
           </InfoRow>
           <InfoRow label="Contact">
-            {HOST.name} on WhatsApp, or privacy@kunji.in to ask for deletion after 12 months.
+            {HOST.name} on WhatsApp, or privacy@kunji.in to ask for deletion after 3 months.
           </InfoRow>
         </div>
         <div className="mt-3.5 border-t-2 border-ink/40 pt-3">

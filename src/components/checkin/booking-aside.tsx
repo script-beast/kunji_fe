@@ -39,7 +39,7 @@ export function BookingAside({ dates, guests, room }: BookingAsideProps = {}) {
         person staying, with one photo ID each.
       </p>
       <p className="mt-2.5 text-[12.5px] leading-relaxed">
-        IDs are kept 3 months from check-out, then deleted. Nothing is shared with anyone else.
+        IDs are kept for 3 months from check-out, then deleted. Nothing is shared with anyone else.
       </p>
 
       <div className="mt-6 border-b-2 border-ink/40 pb-2 text-[11px] tracking-widest uppercase text-ink/65">

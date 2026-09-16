@@ -100,7 +100,7 @@ export function GuestCard({
         />
       </div>
       <p className="m-0 border-t-2 border-ink/40 pt-2 text-xs leading-normal lg:col-span-2">
-        <strong>Kept 12 months, then deleted.</strong> Used only for the register the host must
+        <strong>Kept for 3 months, then deleted.</strong> Used only for the register the host must
         keep by law.
       </p>
     </div>
