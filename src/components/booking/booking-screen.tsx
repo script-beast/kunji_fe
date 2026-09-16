@@ -141,10 +141,7 @@ export function BookingScreen({ gateCode, bookingReference, booking, room }: Boo
             actionLabel="Call"
             actionHref={`tel:${caretakerPhone.replace(/[^\d+]/g, "")}`}
           />
-          <p className="mt-2.5 text-[12.5px] text-pretty">
-            Gate security will not let anyone up without the flat number. Say{" "}
-            <strong>{room?.address || room?.location || PROPERTY.flatLine}, guest of {hostName}</strong>.
-          </p>
+         
         </div>
       </div>
 
