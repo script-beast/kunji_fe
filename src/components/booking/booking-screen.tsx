@@ -69,7 +69,7 @@ export function BookingScreen({ gateCode, bookingReference, booking, room }: Boo
               {doorCode}
             </div>
             <p className="mt-2.5 text-[12.5px] text-pretty">
-              Press the code on the keypad, then <strong>#</strong>. Live until check-out.
+              Press the code on the keypad. Live until check-out.
             </p>
           </div>
           <Button
