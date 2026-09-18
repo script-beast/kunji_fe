@@ -1,9 +1,9 @@
-import { Field } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+// import { Field } from "@/components/ui/field";
+// import { Input } from "@/components/ui/input";
 import { RadioOption } from "@/components/ui/radio-option";
-import { IconLock, IconShield } from "@/components/ui/icons";
+// import { IconLock, IconShield } from "@/components/ui/icons";
 import { UploadField } from "@/components/checkin/upload-field";
-import { DOC_TYPES, HOST } from "@/lib/constants";
+import { DOC_TYPES } from "@/lib/constants";
 import type { DocType, PrimaryGuest } from "@/lib/types";
 // Form C (foreign nationals) is disabled on the frontend for now — see the
 // commented-out blocks below. Re-add these imports if it's turned back on:
@@ -31,7 +31,6 @@ export function StepId({
   onSelectFile,
   onReplace,
 }: StepIdProps) {
-  const hostFirstName = HOST.name.split(" ")[0];
 
   return (
     <div className="grid gap-4 px-4 pt-4.5 pb-6 sm:px-0 sm:py-0">

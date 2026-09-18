@@ -1,20 +1,22 @@
 import type { ArrivalWindow, Country, DocType, VisaType } from "./types";
 
+export const PROPERTY_TIME_ZONE = "Asia/Kolkata";
+
 /** All dummy data below stands in for a real booking/host backend. */
 
 export const PROPERTY = {
-  name: "Aralias Green · 1BHK",
-  flatLine: "Tower 3, 11th floor, flat 1102",
-  addressLine: "Sector 42, Gurgaon",
+  name: "",
+  flatLine: "",
+  addressLine: "",
 };
 
 export const HOST = {
-  name: "Host",
-  phone: "+91 98110 44231",
+  name: "",
+  phone: "",
 };
 
 export const CARETAKER = {
-  name: "Caretaker",
+  name: "",
   role: "Caretaker · on site until 10 pm",
   phone: "+91 99715 20884",
 };
@@ -45,7 +47,9 @@ export const STEP_NAMES = [
 ] as const;
 
 export const ARRIVAL_WINDOWS: ArrivalWindow[] = [
-  "Before 2 pm",
+  "Before 10 am",
+  "10 am - 12 am",
+  "12 pm - 2 pm",
   "2 pm – 5 pm",
   "5 pm – 8 pm",
   "8 pm – 11 pm",

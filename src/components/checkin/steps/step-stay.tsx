@@ -24,6 +24,7 @@ export function StepStay({ booking, room, arrival, onArrivalChange }: StepStayPr
 
   const rows: [string, string][] = [
     ["Flat", room?.name || PROPERTY.name],
+    ["Booked By", booking?.name ?? 'NA'],
     [
       "Check in",
       checkInDay ? `${checkInDay}${checkInTime ? `, after ${checkInTime}` : ""}` : "Not set",

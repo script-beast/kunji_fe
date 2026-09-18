@@ -8,7 +8,9 @@ export type DocType =
 export type UploadStatus = "empty" | "uploading" | "done" | "failed";
 
 export type ArrivalWindow =
-  | "Before 2 pm"
+  | "Before 10 am"
+  | "10 am - 12 am"
+  | "12 pm - 2 pm"
   | "2 pm – 5 pm"
   | "5 pm – 8 pm"
   | "8 pm – 11 pm"
