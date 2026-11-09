@@ -67,6 +67,9 @@ function makePrimaryGuest(initial?: GuestBooking): PrimaryGuest {
     docType: (initial?.documentType as DocType) || "Passport",
     docNumber: "",
     upload: uploadFromDocumentFile(initial?.documentFile ?? undefined),
+    visaUpload: uploadFromDocumentFile(initial?.visaPhoto ?? undefined),
+    arrivalDate: initial?.arrivalDate ? initial.arrivalDate.slice(0, 10) : "",
+    departureDate: initial?.departureDate ? initial.departureDate.slice(0, 10) : "",
     visaNumber: "",
     visaType: VISA_TYPES[0],
     arrivedOn: "",
@@ -143,6 +146,17 @@ export function useCheckinWizard({ formToken, booking, room }: UseCheckinWizardO
     setPrimary((prev) => ({ ...prev, upload: { ...EMPTY_UPLOAD } }));
   }, []);
 
+  const selectVisaFile = useCallback(
+    (file: File) => {
+      runUpload("visa", file, (visaUpload) => setPrimary((prev) => ({ ...prev, visaUpload })));
+    },
+    [runUpload],
+  );
+
+  const resetVisaUpload = useCallback(() => {
+    setPrimary((prev) => ({ ...prev, visaUpload: { ...EMPTY_UPLOAD } }));
+  }, []);
+
   const addGuest = useCallback(() => {
     setCoGuests((prev) => [...prev, makeCoGuest()]);
   }, [maxGuests]);
@@ -172,8 +186,8 @@ export function useCheckinWizard({ formToken, booking, room }: UseCheckinWizardO
 
   const goTo = useCallback((next: WizardStep) => setStep(next), []);
   const back = useCallback(() => setStep((s) => (s > 1 ? ((s - 1) as WizardStep) : s)), []);
-  // const isForeign = primary.nationality !== "India";
-  // const isForeign = false; // TODO: temporarily disable foreigner flow until we have a better UX for it
+  // Set by the admin on the booking; drives the visa photo + arrival/departure fields.
+  const isForeigner = Boolean(booking?.isForeigner);
   const effectiveDocType = primary.docType;
   // const isAadhaar = effectiveDocType === "Aadhaar";
 
@@ -198,10 +212,17 @@ export function useCheckinWizard({ formToken, booking, room }: UseCheckinWizardO
     validEmail &&
     validPhone;
 
+  const foreignerStepValid =
+    !isForeigner ||
+    (primary.visaUpload.status === "done" &&
+      Boolean(primary.arrivalDate) &&
+      Boolean(primary.departureDate) &&
+      primary.departureDate >= primary.arrivalDate);
+
   const canContinue = useMemo(() => {
     switch (step) {
       case 3:
-        return aboutStepValid && primary.upload.status === "done";
+        return aboutStepValid && primary.upload.status === "done" && foreignerStepValid;
       case 4:
         return shortBy === 0 && incompleteGuests === 0;
       case 5:
@@ -209,7 +230,7 @@ export function useCheckinWizard({ formToken, booking, room }: UseCheckinWizardO
       default:
         return step === 1 || aboutStepValid;
     }
-  }, [step, aboutStepValid, primary.upload.status, shortBy, guestUploadsMissing, consent, submitting, saving]);
+  }, [step, aboutStepValid, primary.upload.status, foreignerStepValid, shortBy, guestUploadsMissing, consent, submitting, saving]);
 
   const draftPayload = useCallback(
     () => ({
@@ -222,6 +243,13 @@ export function useCheckinWizard({ formToken, booking, room }: UseCheckinWizardO
       documentType: effectiveDocType,
       documentFile: primary.upload.documentFileId,
       expectedCheckInTime: arrival,
+      ...(isForeigner
+        ? {
+            visaPhoto: primary.visaUpload.documentFileId,
+            arrivalDate: primary.arrivalDate || undefined,
+            departureDate: primary.departureDate || undefined,
+          }
+        : {}),
       guestDetails: coGuests.map((guest) => ({
         name: guest.name || undefined,
         dob: guest.dob || undefined,
@@ -229,7 +257,7 @@ export function useCheckinWizard({ formToken, booking, room }: UseCheckinWizardO
         documentFile: guest.upload.documentFileId,
       })),
     }),
-    [primary, effectiveDocType, arrival, coGuests],
+    [primary, effectiveDocType, arrival, coGuests, isForeigner],
   );
 
   const advance = useCallback(async () => {
@@ -260,6 +288,13 @@ export function useCheckinWizard({ formToken, booking, room }: UseCheckinWizardO
         documentType: effectiveDocType,
         documentFile: primary.upload.documentFileId,
         expectedCheckInTime: arrival,
+        ...(isForeigner
+          ? {
+              visaPhoto: primary.visaUpload.documentFileId,
+              arrivalDate: primary.arrivalDate || undefined,
+              departureDate: primary.departureDate || undefined,
+            }
+          : {}),
         guestDetails: coGuests
           .filter((g) => g.name.trim())
           .map((g) => ({
@@ -275,7 +310,7 @@ export function useCheckinWizard({ formToken, booking, room }: UseCheckinWizardO
     } finally {
       setSubmitting(false);
     }
-  }, [formToken, primary, effectiveDocType, coGuests]);
+  }, [formToken, primary, effectiveDocType, coGuests, arrival, isForeigner]);
 
   return {
     step,
@@ -292,6 +327,8 @@ export function useCheckinWizard({ formToken, booking, room }: UseCheckinWizardO
     updatePrimary,
     selectPrimaryFile,
     resetPrimaryUpload,
+    selectVisaFile,
+    resetVisaUpload,
     natPickerOpen,
     openNationalityPicker: () => setNatPickerOpen(true),
     closeNationalityPicker: () => setNatPickerOpen(false),
@@ -311,7 +348,7 @@ export function useCheckinWizard({ formToken, booking, room }: UseCheckinWizardO
     back,
     advance,
     submit,
-    // isForeign,
+    isForeigner,
     effectiveDocType,
     // isAadhaar,
     enteredGuestCount,

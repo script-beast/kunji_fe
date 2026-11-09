@@ -30,6 +30,10 @@ export interface GuestBooking {
   expectedCheckInTime?: string;
   documentType?: string;
   documentFile?: GuestDocumentFile | null;
+  isForeigner?: boolean;
+  visaPhoto?: GuestDocumentFile | null;
+  arrivalDate?: string;
+  departureDate?: string;
   noOfGuests?: number;
   guestDetails?: GuestCoGuestDetail[];
 }
@@ -100,6 +104,9 @@ export interface SubmitGuestFormPayload {
   documentType?: string;
   documentFile?: string;
   expectedCheckInTime?: string;
+  visaPhoto?: string;
+  arrivalDate?: string;
+  departureDate?: string;
   guestDetails?: {
     name: string;
     dob: string;

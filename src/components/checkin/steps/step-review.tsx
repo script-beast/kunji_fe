@@ -24,7 +24,7 @@ interface StepReviewProps {
   coGuests: CoGuest[];
   room?: GuestRoom;
   booking?: GuestBooking;
-  // isForeign: boolean;
+  isForeigner: boolean;
   // isAadhaar: boolean;
   effectiveDocType: DocType;
   consent: boolean;
@@ -38,8 +38,7 @@ export function StepReview({
   coGuests,
   room,
   booking,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- kept for when Form C is re-enabled
-  // isForeign,
+  isForeigner,
   // isAadhaar,
   effectiveDocType,
   consent,
@@ -57,14 +56,13 @@ export function StepReview({
           : "Not attached",
     },
   ];
-  // Form C (foreign nationals) — disabled on the frontend for now.
-  // if (isForeign) {
-  //   idRows.push(
-  //     { k: "Visa", v: `${primary.visaNumber || "Not entered"} · ${primary.visaType}` },
-  //     { k: "Entered India", v: primary.arrivedOn || "Not entered" },
-  //     { k: "Port", v: primary.portOfEntry }
-  //   );
-  // }
+  if (isForeigner) {
+    idRows.push(
+      { k: "Visa photo", v: primary.visaUpload.status === "done" ? "Attached" : "Not attached" },
+      { k: "Arrival in India", v: primary.arrivalDate || "Not entered" },
+      { k: "Departure from India", v: primary.departureDate || "Not entered" },
+    );
+  }
 
   const sections: ReviewSection[] = [
     {

@@ -47,11 +47,13 @@ function StepContent({ wizard }: { wizard: WizardState }) {
         <StepId
           primary={wizard.primary}
           onUpdate={wizard.updatePrimary}
-          // isForeign={wizard.isForeign}
+          isForeigner={wizard.isForeigner}
           // isAadhaar={wizard.isAadhaar}
           effectiveDocType={wizard.effectiveDocType}
           onSelectFile={wizard.selectPrimaryFile}
           onReplace={wizard.resetPrimaryUpload}
+          onSelectVisaFile={wizard.selectVisaFile}
+          onReplaceVisa={wizard.resetVisaUpload}
         />
       );
     case 4:
@@ -80,7 +82,7 @@ function StepContent({ wizard }: { wizard: WizardState }) {
           coGuests={wizard.coGuests}
           room={wizard.room}
           booking={wizard.booking}
-          // isForeign={wizard.isForeign}
+          isForeigner={wizard.isForeigner}
           // isAadhaar={wizard.isAadhaar}
           effectiveDocType={wizard.effectiveDocType}
           consent={wizard.consent}

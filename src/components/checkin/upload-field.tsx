@@ -9,10 +9,12 @@ interface UploadFieldProps {
   upload: Upload;
   onSelectFile: (file: File) => void;
   onReplace: () => void;
+  /** Text shown on the thumbnail once uploaded, e.g. "ID PAGE" or "VISA". */
+  badge?: string;
 }
 
 /** The four states an ID photo upload moves through: empty, uploading, done, failed. */
-export function UploadField({ label, upload, onSelectFile, onReplace }: UploadFieldProps) {
+export function UploadField({ label, upload, onSelectFile, onReplace, badge = "ID PAGE" }: UploadFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const openPicker = () => inputRef.current?.click();
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -65,7 +67,7 @@ export function UploadField({ label, upload, onSelectFile, onReplace }: UploadFi
       {upload.status === "done" && (
         <div className="flex items-start gap-3 border border-ink/40 bg-panel p-3">
           <div className="grid h-11 w-16 flex-none place-items-center bg-neutral-800 text-[9px] tracking-widest text-neutral-200">
-            ID PAGE
+            {badge}
           </div>
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-semibold">{upload.fileName ?? "id-page.jpg"}</div>

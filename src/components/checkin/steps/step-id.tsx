@@ -1,5 +1,5 @@
-// import { Field } from "@/components/ui/field";
-// import { Input } from "@/components/ui/input";
+import { Field } from "@/components/ui/field";
+import { DateInput } from "@/components/ui/input";
 import { RadioOption } from "@/components/ui/radio-option";
 // import { IconLock, IconShield } from "@/components/ui/icons";
 import { UploadField } from "@/components/checkin/upload-field";
@@ -15,22 +15,31 @@ import type { DocType, PrimaryGuest } from "@/lib/types";
 interface StepIdProps {
   primary: PrimaryGuest;
   onUpdate: (patch: Partial<PrimaryGuest>) => void;
-  // isForeign: boolean;
+  /** True when the host flagged this booking as a foreign guest. */
+  isForeigner: boolean;
   // isAadhaar: boolean;
   effectiveDocType: DocType;
   onSelectFile: (file: File) => void;
   onReplace: () => void;
+  onSelectVisaFile: (file: File) => void;
+  onReplaceVisa: () => void;
 }
 
 export function StepId({
   primary,
   onUpdate,
-  // isForeign,
+  isForeigner,
   // isAadhaar,
   effectiveDocType,
   onSelectFile,
   onReplace,
+  onSelectVisaFile,
+  onReplaceVisa,
 }: StepIdProps) {
+  const departureBeforeArrival =
+    Boolean(primary.arrivalDate) &&
+    Boolean(primary.departureDate) &&
+    primary.departureDate < primary.arrivalDate;
 
   return (
     <div className="grid gap-4 px-4 pt-4.5 pb-6 sm:px-0 sm:py-0">
@@ -98,8 +107,48 @@ export function StepId({
         </span> */}
       </p>
 
-      {/* Form C (foreign nationals) — disabled on the frontend for now.
-      {isForeign && (
+      {isForeigner && (
+        <div className="grid gap-3.5 border-t-2 border-ink/40 pt-4 sm:gap-4">
+          <div className="text-[11px] tracking-widest uppercase text-ink/65">
+            Foreign guest details
+          </div>
+          <UploadField
+            label="Photo of your visa — required"
+            badge="VISA"
+            upload={primary.visaUpload}
+            onSelectFile={onSelectVisaFile}
+            onReplace={onReplaceVisa}
+          />
+          <div className="grid gap-3.5 sm:gap-4 lg:grid-cols-2">
+            <Field label="Arrival date in India" htmlFor="arrivalDate">
+              <DateInput
+                id="arrivalDate"
+                value={primary.arrivalDate}
+                onChange={(e) => onUpdate({ arrivalDate: e.target.value })}
+              />
+            </Field>
+            <Field
+              label="Departure date from India"
+              htmlFor="departureDate"
+              hint={
+                departureBeforeArrival
+                  ? "Departure can't be before your arrival date."
+                  : undefined
+              }
+            >
+              <DateInput
+                id="departureDate"
+                min={primary.arrivalDate || undefined}
+                value={primary.departureDate}
+                onChange={(e) => onUpdate({ departureDate: e.target.value })}
+              />
+            </Field>
+          </div>
+        </div>
+      )}
+
+      {/* Older Form C block (visa number / type / port of entry / home address) — still disabled.
+      {false && (
         <div className="grid gap-3.5 border-t-2 border-ink/40 pt-4 sm:gap-4">
           <div className="text-[11px] tracking-widest uppercase text-ink/65">
             From your visa

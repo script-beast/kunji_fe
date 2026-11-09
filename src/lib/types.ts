@@ -43,6 +43,10 @@ export interface PrimaryGuest {
   docType: DocType;
   docNumber: string;
   upload: Upload;
+  // Foreigner-only fields (collected when the booking is flagged `isForeigner`).
+  visaUpload: Upload;
+  arrivalDate: string;
+  departureDate: string;
   visaNumber: string;
   visaType: VisaType;
   arrivedOn: string;
