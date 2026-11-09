@@ -96,20 +96,10 @@ export function StepId({
         onSelectFile={onSelectFile}
         onReplace={onReplace}
       />
-      <p className="m-0 flex gap-2 border-t-2 border-ink/40 pt-2.5 text-xs leading-normal">
-        <strong className="whitespace-nowrap">
-          Kept for 3 months, then deleted.
-        </strong>
-        {/* <span>
-          Used only for the guest register {hostFirstName} must keep by law, and
-          shown to the police only if they ask. Never sent to anyone else, never
-          used for marketing.
-        </span> */}
-      </p>
 
       {isForeigner && (
         <div className="grid gap-3.5 border-t-2 border-ink/40 pt-4 sm:gap-4">
-          <div className="text-[11px] tracking-widest uppercase text-ink/65">
+          <div className="text-xl tracking-widest uppercase text-ink/65">
             Foreign guest details
           </div>
           <UploadField
@@ -146,6 +136,17 @@ export function StepId({
           </div>
         </div>
       )}
+
+      <p className="m-0 flex gap-2 border-t-2 border-ink/40 pt-2.5 text-xs leading-normal">
+        <strong className="whitespace-nowrap">
+          Kept for 3 months, then deleted.
+        </strong>
+        {/* <span>
+          Used only for the guest register {hostFirstName} must keep by law, and
+          shown to the police only if they ask. Never sent to anyone else, never
+          used for marketing.
+        </span> */}
+      </p>
 
       {/* Older Form C block (visa number / type / port of entry / home address) — still disabled.
       {false && (
