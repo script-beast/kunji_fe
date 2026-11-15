@@ -1,10 +1,30 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import { ARRIVAL_WINDOWS, COUNTRY_CODES, PORTS_OF_ENTRY, VISA_TYPES } from "@/lib/constants";
-import { getErrorMessage, saveGuestForm, submitGuestForm, uploadGuestDocument } from "@/lib/api";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  ARRIVAL_WINDOWS,
+  DEFAULT_COUNTRY_CODE,
+  DEFAULT_NATIONALITY,
+  PORTS_OF_ENTRY,
+  VISA_TYPES,
+} from "@/lib/constants";
+import {
+  getCountries,
+  getErrorMessage,
+  saveGuestForm,
+  submitGuestForm,
+  uploadGuestDocument,
+} from "@/lib/api";
 import type { GuestBooking, GuestCoGuestDetail, GuestRoom } from "@/lib/api";
-import type { ArrivalWindow, CoGuest, DocType, PrimaryGuest, Upload, WizardStep } from "@/lib/types";
+import type {
+  ArrivalWindow,
+  CoGuest,
+  Country,
+  DocType,
+  PrimaryGuest,
+  Upload,
+  WizardStep,
+} from "@/lib/types";
 import { todayDateInputValue } from "@/lib/utils";
 
 const EMPTY_UPLOAD: Upload = { status: "empty", pct: 0 };
@@ -51,7 +71,7 @@ function makeCoGuestFromDetail(detail: GuestCoGuestDetail, index: number): CoGue
 function makePrimaryGuest(initial?: GuestBooking): PrimaryGuest {
   const storedPhone = initial?.phone || "";
   const parsedCountryCode = storedPhone.match(/^(\+\d+)\s+/)?.[1];
-  const countryCode = initial?.countryCode || parsedCountryCode || COUNTRY_CODES[0];
+  const countryCode = initial?.countryCode || parsedCountryCode || DEFAULT_COUNTRY_CODE;
   const phone = (parsedCountryCode ? storedPhone.replace(/^\+\d+\s+/, "") : storedPhone).replace(
     /\D/g,
     "",
@@ -63,7 +83,7 @@ function makePrimaryGuest(initial?: GuestBooking): PrimaryGuest {
     countryCode,
     phone,
     email: initial?.email || "",
-    nationality: initial?.nationality || "India",
+    nationality: initial?.nationality || DEFAULT_NATIONALITY,
     docType: (initial?.documentType as DocType) || "Passport",
     docNumber: "",
     upload: uploadFromDocumentFile(initial?.documentFile ?? undefined),
@@ -102,12 +122,32 @@ export function useCheckinWizard({ formToken, booking, room }: UseCheckinWizardO
   const [arrival, setArrival] = useState<ArrivalWindow>(initialArrival);
   const [primary, setPrimary] = useState<PrimaryGuest>(() => makePrimaryGuest(booking));
   const [natPickerOpen, setNatPickerOpen] = useState(false);
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [countriesLoading, setCountriesLoading] = useState(true);
+  const [countriesError, setCountriesError] = useState(false);
   const [coGuests, setCoGuests] = useState<CoGuest[]>(() =>
     booking?.guestDetails?.length
       ? booking.guestDetails.map(makeCoGuestFromDetail)
       : [makeCoGuest()],
   );
   const [consent, setConsent] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    getCountries()
+      .then((list) => {
+        if (!cancelled) setCountries(list);
+      })
+      .catch(() => {
+        if (!cancelled) setCountriesError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setCountriesLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const runUpload = useCallback(
     (key: string, file: File, apply: (upload: Upload) => void) => {
@@ -329,6 +369,9 @@ export function useCheckinWizard({ formToken, booking, room }: UseCheckinWizardO
     resetPrimaryUpload,
     selectVisaFile,
     resetVisaUpload,
+    countries,
+    countriesLoading,
+    countriesError,
     natPickerOpen,
     openNationalityPicker: () => setNatPickerOpen(true),
     closeNationalityPicker: () => setNatPickerOpen(false),

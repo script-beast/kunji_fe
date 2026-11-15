@@ -4,21 +4,31 @@ import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { IconArrowLeft } from "@/components/ui/icons";
-import { COUNTRIES } from "@/lib/constants";
+import type { Country } from "@/lib/types";
 
 interface NationalityPickerProps {
+  countries: Country[];
+  loading?: boolean;
+  error?: boolean;
   onPick: (country: string) => void;
   onClose: () => void;
   className?: string;
 }
 
-export function NationalityPicker({ onPick, onClose, className }: NationalityPickerProps) {
+export function NationalityPicker({
+  countries,
+  loading,
+  error,
+  onPick,
+  onClose,
+  className,
+}: NationalityPickerProps) {
   const [query, setQuery] = useState("");
 
   const results = useMemo(
     () =>
-      COUNTRIES.filter((c) => c.name.toLowerCase().includes(query.trim().toLowerCase())),
-    [query]
+      countries.filter((c) => c.name.toLowerCase().includes(query.trim().toLowerCase())),
+    [countries, query]
   );
 
   return (
@@ -36,17 +46,20 @@ export function NationalityPicker({ onPick, onClose, className }: NationalityPic
         />
       </div>
       <div className="flex-1 overflow-y-auto">
+        {loading && <p className="px-4 py-3.5 text-sm text-neutral-700">Loading countries…</p>}
+        {!loading && error && (
+          <p className="px-4 py-3.5 text-sm text-neutral-700">
+            Could not load countries. Please close and try again.
+          </p>
+        )}
         {results.map((country) => (
           <button
-            key={country.name}
+            key={country.iso2}
             type="button"
             onClick={() => onPick(country.name)}
             className="flex w-full items-center justify-between border-b border-ink/40 px-4 py-3.5 text-left text-sm cursor-pointer hover:bg-ink/5"
           >
             <span>{country.name}</span>
-            {country.extraChecks && (
-              <span className="text-[11px] text-accent-700">Extra checks</span>
-            )}
           </button>
         ))}
       </div>

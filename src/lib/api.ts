@@ -1,3 +1,5 @@
+import type { Country } from "./types";
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export type ViewState = "form" | "pending_review" | "approved" | "expired";
@@ -141,6 +143,12 @@ export async function submitGuestForm(formToken: string, payload: SubmitGuestFor
     body: JSON.stringify(payload),
   });
   return unwrap<{ formToken: string }>(response);
+}
+
+export async function getCountries(): Promise<Country[]> {
+  const response = await fetch(`${API_BASE_URL}/api/countries`);
+  const data = await unwrap<{ countries: Country[] }>(response);
+  return data.countries;
 }
 
 export function getErrorMessage(error: unknown, fallback = "Something went wrong. Please try again.") {

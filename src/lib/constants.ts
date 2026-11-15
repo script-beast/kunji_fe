@@ -1,4 +1,4 @@
-import type { ArrivalWindow, Country, DocType, VisaType } from "./types";
+import type { ArrivalWindow, DocType, VisaType } from "./types";
 
 export const PROPERTY_TIME_ZONE = "Asia/Kolkata";
 
@@ -83,46 +83,5 @@ export const PORTS_OF_ENTRY = [
   "Land border",
 ];
 
-export const COUNTRY_CODES = ["+91", "+44", "+1", "+61", "+65", "+971", "+49"];
-
-const EXTRA_CHECK_COUNTRIES = new Set([
-  "Pakistan",
-  "Afghanistan",
-  "China",
-  "Bangladesh",
-  "Sri Lanka",
-  "Nepal",
-  "Russia",
-]);
-
-const COUNTRY_NAMES = [
-  "India",
-  "United Kingdom",
-  "United States",
-  "Germany",
-  "France",
-  "Australia",
-  "Canada",
-  "Singapore",
-  "United Arab Emirates",
-  "Japan",
-  "South Korea",
-  "Netherlands",
-  "Spain",
-  "Italy",
-  "Israel",
-  "Nepal",
-  "Sri Lanka",
-  "Bangladesh",
-  "Brazil",
-  "South Africa",
-  "Russia",
-  "China",
-  "Pakistan",
-  "Afghanistan",
-];
-
-export const COUNTRIES: Country[] = COUNTRY_NAMES.map((name) => ({
-  name,
-  extraChecks: EXTRA_CHECK_COUNTRIES.has(name),
-}));
+export const DEFAULT_COUNTRY_CODE = "+91";
+export const DEFAULT_NATIONALITY = "India";

@@ -38,6 +38,7 @@ function StepContent({ wizard }: { wizard: WizardState }) {
       return (
         <StepAbout
           primary={wizard.primary}
+          countries={wizard.countries}
           onUpdate={wizard.updatePrimary}
           onOpenNationalityPicker={wizard.openNationalityPicker}
         />
@@ -155,7 +156,13 @@ interface CheckinWizardProps {
 export function CheckinWizard({ formToken, booking, room, objectionReason }: CheckinWizardProps) {
   const wizard = useCheckinWizard({ formToken, booking, room });
   const natPicker: ReactNode = wizard.natPickerOpen ? (
-    <NationalityPicker onPick={wizard.setNationality} onClose={wizard.closeNationalityPicker} />
+    <NationalityPicker
+      countries={wizard.countries}
+      loading={wizard.countriesLoading}
+      error={wizard.countriesError}
+      onPick={wizard.setNationality}
+      onClose={wizard.closeNationalityPicker}
+    />
   ) : null;
   const dateRange = formatDateRange(booking?.checkInDate, booking?.checkOutDate);
 
@@ -249,6 +256,9 @@ export function CheckinWizard({ formToken, booking, room, objectionReason }: Che
         {wizard.natPickerOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/25 p-4">
             <NationalityPicker
+              countries={wizard.countries}
+              loading={wizard.countriesLoading}
+              error={wizard.countriesError}
               onPick={wizard.setNationality}
               onClose={wizard.closeNationalityPicker}
               className="relative inset-auto h-[min(70vh,600px)] w-full max-w-md border-2 border-ink/40 shadow-xl"

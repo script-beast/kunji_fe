@@ -2,17 +2,31 @@ import { Field } from "@/components/ui/field";
 import { DateInput, Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { IconSearch } from "@/components/ui/icons";
-import { COUNTRY_CODES } from "@/lib/constants";
-import type { PrimaryGuest } from "@/lib/types";
+import type { Country, PrimaryGuest } from "@/lib/types";
 import { todayDateInputValue } from "@/lib/utils";
 
 interface StepAboutProps {
   primary: PrimaryGuest;
+  countries: Country[];
   onUpdate: (patch: Partial<PrimaryGuest>) => void;
   onOpenNationalityPicker: () => void;
 }
 
-export function StepAbout({ primary, onUpdate, onOpenNationalityPicker }: StepAboutProps) {
+function buildDialCodes(countries: Country[], selected: string): string[] {
+  const codes = new Set(countries.map((c) => c.dialCode));
+  // Keep the current value selectable while the list loads or if it isn't in the list.
+  if (selected) codes.add(selected);
+  return [...codes].sort((a, b) => Number(a.slice(1)) - Number(b.slice(1)));
+}
+
+export function StepAbout({
+  primary,
+  countries,
+  onUpdate,
+  onOpenNationalityPicker,
+}: StepAboutProps) {
+  const dialCodes = buildDialCodes(countries, primary.countryCode);
+
   return (
     <div className="grid gap-3.5 px-4 pt-4.5 pb-6 sm:gap-0 sm:px-0 sm:py-0">
       <div className="sm:mb-5.5">
@@ -51,7 +65,7 @@ export function StepAbout({ primary, onUpdate, onOpenNationalityPicker }: StepAb
                 value={primary.countryCode}
                 onChange={(e) => onUpdate({ countryCode: e.target.value })}
               >
-                {COUNTRY_CODES.map((code) => (
+                {dialCodes.map((code) => (
                   <option key={code} value={code}>
                     {code}
                   </option>

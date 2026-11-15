@@ -65,5 +65,6 @@ export interface CoGuest {
 
 export interface Country {
   name: string;
-  extraChecks: boolean;
+  iso2: string;
+  dialCode: string;
 }
